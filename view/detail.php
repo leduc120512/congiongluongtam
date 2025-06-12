@@ -544,7 +544,10 @@ require_once __DIR__ . '/../Format/description_formatter.php';
 
                             </form>
 
-                            <button style="width: 160px !important; " class="btn btn-primary consult-btn" data-product-id="<?php echo $product['ID']; ?>" type="submit">Liên hệ tư vấn</button>
+                            <!-- Button mở modal (đổi ID) -->
+                            <button type="button" class="btn btn-primary consult-btn-1" data-bs-toggle="modal" data-bs-target="#consultModal_1" data-product-id="<?php echo $product['ID']; ?>">
+                                Mua ngay hoặc liên hệ
+                            </button>
                         </div>
                     </div>
                     <div class="text-gray-600 mb-2"><strong>Mô tả:</strong>
@@ -688,39 +691,36 @@ require_once __DIR__ . '/../Format/description_formatter.php';
                 <?php endif; ?>
             </div>
         </div>
+        <!-- Modal Bootstrap (đổi ID và các phần tử bên trong) -->
+        <div class="modal fade" id="consultModal_1" tabindex="-1" aria-labelledby="consultModalLabel_1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="consultForm_1">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="consultModalLabel_1">Liên hệ hoặc Mua ngay</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="product_id" id="modalProductId_1" value="">
+                            <input type="hidden" name="action" id="formAction_1" value="contact">
 
-        <?php include 'support.php'; ?>
-        <div id="consultModal" class="modal">
-            <div class="modal-content">
-                <span class="close">×</span>
-                <h2>Liên hệ hoặc Mua ngay</h2>
+                            <div class="mb-3">
+                                <label for="name_1" class="form-label">Họ và tên</label>
+                                <input type="text" class="form-control" id="name_1" name="name" required>
+                            </div>
 
-                <form id="consultForm" method="POST" action="/order/create">
-                    <input type="hidden" id="modalProductId" name="product_id">
-                    <input type="hidden" id="formAction" name="action" value="contact"> <!-- ✅ NOTE: hidden field action -->
+                            <div class="mb-3">
+                                <label for="phone_1" class="form-label">Số điện thoại</label>
+                                <input type="text" class="form-control" id="phone_1" name="phone" required>
+                            </div>
 
-                    <!-- Thông tin người dùng -->
-                    <div>
-                        <label for="name">Họ và tên:</label>
-                        <input type="text" id="name" name="name"
-                            value="<?php echo isset($_SESSION['user']['name']) ? htmlspecialchars($_SESSION['user']['name']) : ''; ?>">
-                    </div>
-
-                    <div>
-                        <label for="phone">Số điện thoại:</label>
-                        <input type="text" id="phone" name="phone"
-                            value="<?php echo isset($_SESSION['user']['phone']) ? htmlspecialchars($_SESSION['user']['phone']) : ''; ?>"
-                            required>
-                    </div>
-
-                    <div>
-                        <label for="note">Tin nhắn:</label>
-                        <textarea id="note" name="note"></textarea>
-                    </div>
-
-                    <!-- ✅ NOTE: Đổi 2 nút submit thành button thường để xử lý bằng JS -->
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <button type="button" id="contactBtn" style="
+                            <div class="mb-3">
+                                <label for="note_1" class="form-label">Tin nhắn</label>
+                                <textarea class="form-control" id="note_1" name="note" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button style="
     background-color: #3498db;     /* Xanh dương */
     color: white;
     padding: 10px 20px;
@@ -729,9 +729,8 @@ require_once __DIR__ . '/../Format/description_formatter.php';
     font-weight: bold;
     cursor: pointer;
     transition: background 0.3s;
-  ">Liên hệ</button>
-
-                        <button type="button" id="buyBtn" style="
+  " type="button" id="contactBtn_1" class="btn btn-primary">Liên hệ</button>
+                            <button style="
     background-color: #e67e22;     /* Cam nổi bật */
     color: white;
     padding: 10px 20px;
@@ -740,14 +739,13 @@ require_once __DIR__ . '/../Format/description_formatter.php';
     font-weight: bold;
     cursor: pointer;
     transition: background 0.3s;
-  ">Mua ngay</button>
-                    </div>
-
-                </form>
-
-                <p id="formMessage"></p>
+  " type="button" id="buyBtn_1" class="btn btn-warning">Mua ngay</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+
         <div class="col-xs-12 col-md-3" style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;">
             <?php include 'detailList.php'; ?>
             <?php include 'newFm.php'; ?>
@@ -930,6 +928,80 @@ require_once __DIR__ . '/../Format/description_formatter.php';
             });
         });
     </script>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gán ID sản phẩm vào modal khi nhấn nút mở modal
+            document.querySelectorAll('.consult-btn-1').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = button.getAttribute('data-product-id');
+                    document.getElementById('modalProductId_1').value = productId;
+                });
+            });
+
+            // Bắt sự kiện nút "Liên hệ"
+            document.getElementById('contactBtn_1').addEventListener('click', () => {
+                document.getElementById('formAction_1').value = 'contact';
+                document.getElementById('consultForm_1').requestSubmit();
+            });
+
+            // Bắt sự kiện nút "Mua ngay"
+            document.getElementById('buyBtn_1').addEventListener('click', () => {
+                document.getElementById('formAction_1').value = 'buy';
+                document.getElementById('consultForm_1').requestSubmit();
+            });
+
+            // Xử lý submit AJAX
+            document.getElementById('consultForm_1').addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const form = event.target;
+                const formData = new FormData(form);
+
+                Swal.fire({
+                    title: 'Đang gửi...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                fetch('?controller=order&action=create', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: data.success ? 'success' : 'error',
+                            title: 'Thông báo',
+                            text: data.success ?
+                                'Gửi yêu cầu thành công. Chúng tôi sẽ sớm liên hệ.' : (data.message || 'Đã có lỗi xảy ra.'),
+                            confirmButtonText: 'OK'
+                        });
+                        if (data.success) {
+                            const modalEl = bootstrap.Modal.getInstance(document.getElementById('consultModal_1'));
+                            modalEl.hide();
+                            form.reset();
+                        }
+                    })
+                    .catch(() => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Không gửi được, vui lòng thử lại.',
+                            confirmButtonText: 'OK'
+                        });
+                    });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

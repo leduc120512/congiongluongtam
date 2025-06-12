@@ -130,9 +130,22 @@
                 <input type="text" id="form2Example1" class="form-control" name="username" placeholder=" " required />
                 <label class="form-label" for="form2Example1">Username</label>
             </div>
+            <div class="form-outline">
+                <input
+                    type="text"
+                    id="form2Example1"
+                    class="form-control"
+                    name="phone"
+                    placeholder=" "
+                    required
+                    pattern="\d{10}"
+                    title="Số điện thoại phải gồm đúng 10 chữ số" />
+
+                <label class="form-label" for="form2Example1">Phone</label>
+            </div>
 
             <div class="form-outline">
-                <input type="email" id="form2Example3" class="form-control" name="email" placeholder=" " required />
+                <input type="email" id="form2Example3" class="form-control" name="email" placeholder=" " />
                 <label class="form-label" for="form2Example3">Email</label>
             </div>
 

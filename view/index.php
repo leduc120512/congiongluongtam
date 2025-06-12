@@ -887,7 +887,7 @@
   </section>
 
 
-  <div class="offcanvas-body mess_l1131ist justify-content-center" style="margin-bottom: 10px; padding-bottom: 20px;">
+  <div class="offcanvas-body mess_l1131ist justify-content-center" style="">
     <ul class="custom-nav mb-0" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 0; list-style: none; width: 100%;">
 
 
@@ -950,33 +950,35 @@
           </select>
         </div>
       </form>
+      <div style="display: flex; justify-content: space-around; width: 100%;">
 
-      <li class="custom-item" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px; margin: 0; text-align: center;">
-        <select id="categorySelect_art1" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryArt1()" style="width: 100%; ">
-          <option value="" <?php echo !isset($_GET['category_id_art']) ? 'selected' : ''; ?>>TIN TỨC HÀNG NGÀY</option>
-          <?php $categoryArt = $this->article->CatergorygetAllAt();
-          if (!empty($categoryArt) && is_array($categoryArt)): ?>
-            <?php foreach ($categoryArt as $cat): ?>
-              <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_art']) && $_GET['category_id_art'] == $cat['id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
-              </option>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </select>
-      </li>
+        <li class="custom-item" style=" min-width: 100px; margin: 0; text-align: center;">
+          <select id="categorySelect_art1" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryArt1()" style="width: 100%; ">
+            <option value="" <?php echo !isset($_GET['category_id_art']) ? 'selected' : ''; ?>>TIN TỨC HÀNG NGÀY</option>
+            <?php $categoryArt = $this->article->CatergorygetAllAt();
+            if (!empty($categoryArt) && is_array($categoryArt)): ?>
+              <?php foreach ($categoryArt as $cat): ?>
+                <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_art']) && $_GET['category_id_art'] == $cat['id']) ? 'selected' : ''; ?>>
+                  <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
+                </option>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </li>
 
-      <li class="custom-item" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px; margin: 0; text-align: center;">
-        <select id="categorySelect_fm1" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryFm1()" style="width: 100%;">
-          <option value="" <?php echo !isset($_GET['category_id_fm']) ? 'selected' : ''; ?>>QUY TRÌNH CHĂN NUÔI</option>
-          <?php if (!empty($categoryFm) && is_array($categoryFm)): ?>
-            <?php foreach ($categoryFm as $cat): ?>
-              <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_fm']) && $_GET['category_id_fm'] == $cat['id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
-              </option>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </select>
-      </li>
+        <li class="custom-item" style=" min-width: 100px; margin: 0; text-align: center;">
+          <select id="categorySelect_fm1" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryFm1()" style="width: 100%;">
+            <option value="" <?php echo !isset($_GET['category_id_fm']) ? 'selected' : ''; ?>>QUY TRÌNH CHĂN NUÔI</option>
+            <?php if (!empty($categoryFm) && is_array($categoryFm)): ?>
+              <?php foreach ($categoryFm as $cat): ?>
+                <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_fm']) && $_GET['category_id_fm'] == $cat['id']) ? 'selected' : ''; ?>>
+                  <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
+                </option>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </li>
+      </div>
     </ul>
   </div>
 
@@ -985,8 +987,8 @@
       <div
         class="section-header d-flex flex-wrap justify-content-between pb-2">
         <h2 style="font-size: 24px; font-weight: bold; color: #f39c12;">
-  Top sản phẩm bán chạy
-</h2>
+          Top sản phẩm bán chạy
+        </h2>
 
 
       </div>
@@ -1064,27 +1066,29 @@
       </div>
     </div>
 
-  
+
   </div>
   <section id="shop-categories" class="section-padding">
     <div class="container-lg">
       <div class="row g-md-5 cal">
 
 
-        <?php
+        <?php if (isset($_GET['category_id_fm'])) {
+          include __DIR__ . '/./farming.php'; // Nếu farming.php nằm ở thư mục cha
+
+        }
         if (isset($_GET['category_id_art'])) {
           include 'Art.php';
         }
-        if (isset($_GET['category_id_fm'])) {
-          include 'farming.php';
-        }
+
         ?>
         <div class="col-md-12">
           <div class="row">
             <div class="col-md-12">
               <div
                 class="section-header d-flex flex-wrap   mt-lg-0">
-                <h2 class="section-title index_pv">Sản phẩm </h2>
+
+
 
 
               </div>
@@ -1279,7 +1283,7 @@
           </h2>
           <p>Đăng ký thành viên ngay – nhận ưu đãi khi đặt mua gà, vịt giống lần đầu!</p>
 
-          <form>
+          <form action="?controller=auth&action=register" method="post">
             <div class="mb-3">
               <label for="email" class="form-label d-none">Email</label>
               <input
@@ -1291,11 +1295,12 @@
                 required />
             </div>
             <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-dark btn-lg">
+              <button type="submit" class="btn btn-dark" style="width: 100px !important;">
                 Đăng ký
               </button>
             </div>
           </form>
+
         </div>
         <div class="col-md-7">
           <img src="../view/images/banner-dog.png" alt="image" class="img-fluid" />
@@ -1480,7 +1485,12 @@
       }
 
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('category_id_art' || 'category_id_fm' || 'search')) {
+      if (urlParams.has('category_id_art' )) {
+        // Nếu có category_id_art, gán cờ và ẩn
+        document.querySelectorAll('.el').forEach(el => el.style.display = 'none');
+        sessionStorage.setItem('hideEl', 'true');
+      }
+      if (urlParams.has('category_id_fm')) {
         // Nếu có category_id_art, gán cờ và ẩn
         document.querySelectorAll('.el').forEach(el => el.style.display = 'none');
         sessionStorage.setItem('hideEl', 'true');

@@ -15,24 +15,25 @@ class AuthController
     }
 
 
-
     public function register()
     {
         if (isset($_POST['register'])) {
             $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = $_POST['password'];
+            $phone = filter_input(INPUT_POST, 'phone', FILTER_SANITIZE_STRING);
 
             // In ra các input để kiểm tra (có thể bỏ sau khi debug xong)
             echo "Username: " . htmlspecialchars($username) . "<br>";
             echo "Email: " . htmlspecialchars($email) . "<br>";
             echo "Password: " . htmlspecialchars($password) . "<br>";
+            echo "Phone: " . htmlspecialchars($phone) . "<br>";
 
             // Kiểm tra email hợp lệ
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $error = "Email không hợp lệ!";
                 echo $error . "<br>";
-            } elseif ($this->user->register($username, $email, $password)) { // Giả sử model User có tham số email
+            } elseif ($this->user->register($username, $email, $password, $phone)) {
                 header("Location: ?controller=auth&action=login");
                 exit;
             } else {
@@ -40,8 +41,10 @@ class AuthController
                 echo $error . "<br>";
             }
         }
+
         require __DIR__ . '/../view/register.php';
     }
+
     public function login()
     {
         if (isset($_POST['login'])) {

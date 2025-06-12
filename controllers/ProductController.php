@@ -657,37 +657,76 @@ class ProductController
             exit;
         }
     }
-
-    public function detail($id)
+    public function detail()
     {
+        // 1. Lấy slug từ URL
+        $slug = $_GET['slug'] ?? null;
 
-        $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-        if ($id === false || $id === null) {
-            $_SESSION['error'] = "ID sản phẩm không hợp lệ.";
-            header("Location: ?controller=product&action=index&redirected=1");
+        if (!$slug) {
+            $_SESSION['error'] = "Đường dẫn không hợp lệ.";
+            header("Location: /");
             exit;
         }
-        $product = $this->product->getById($id);
-        if (!$product) {
+
+        // 2. Lấy sản phẩm từ slug
+        $product = $this->product->getBySlug($slug);
+
+        if (!$product || empty($product['ID'])) {
             $_SESSION['error'] = "Sản phẩm không tồn tại.";
-            header("Location: ?controller=product&action=index&redirected=1");
+            header("Location: /");
             exit;
         }
 
-        // Lấy đánh giá và bình luận
-        $reviews = $this->productReview->getByProductId($id);
-        $comments = $this->productComment->getByProductId($id);
-        $averageRating = $this->productReview->getAverageRating($id);
+        $productId = $product['ID'];
 
-        // Lấy trả lời cho từng bình luận
+        // 3. Lấy đánh giá sản phẩm
+        $reviews = $this->productReview->getByProductId($productId);
+        $averageRating = $this->productReview->getAverageRating($productId);
+
+        // 4. Lấy bình luận và trả lời bình luận
+        $comments = $this->productComment->getByProductId($productId);
         foreach ($comments as &$comment) {
             $comment['replies'] = $this->commentReply->getByCommentId($comment['ID']);
         }
+
+        // 5. Lấy danh mục khác nếu cần
         $categoryFmProductsone = $this->FarmingProcess->getAllMain();
         $categoryartProductsone = $this->article->getAllMain();
 
+        // 6. Gọi giao diện
         require_once __DIR__ . '/../view/detail.php';
     }
+
+    // public function detail($id)
+    // {
+
+    //     $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+    //     if ($id === false || $id === null) {
+    //         $_SESSION['error'] = "ID sản phẩm không hợp lệ.";
+    //         header("Location: ?controller=product&action=index&redirected=1");
+    //         exit;
+    //     }
+    //     $product = $this->product->getById($id);
+    //     if (!$product) {
+    //         $_SESSION['error'] = "Sản phẩm không tồn tại.";
+    //         header("Location: ?controller=product&action=index&redirected=1");
+    //         exit;
+    //     }
+
+    //     // Lấy đánh giá và bình luận
+    //     $reviews = $this->productReview->getByProductId($id);
+    //     $comments = $this->productComment->getByProductId($id);
+    //     $averageRating = $this->productReview->getAverageRating($id);
+
+    //     // Lấy trả lời cho từng bình luận
+    //     foreach ($comments as &$comment) {
+    //         $comment['replies'] = $this->commentReply->getByCommentId($comment['ID']);
+    //     }
+    //     $categoryFmProductsone = $this->FarmingProcess->getAllMain();
+    //     $categoryartProductsone = $this->article->getAllMain();
+
+    //     require_once __DIR__ . '/../view/detail.php';
+    // }
     public function addReview()
     {
         if (!isset($_SESSION['user_id'])) {

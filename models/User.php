@@ -79,17 +79,21 @@ class User
         return $stmt->fetch() !== false;
     }
 
-    public function register($username, $email, $password)
+    public function register($username, $email, $password, $phone)
     {
-        $query = "INSERT INTO " . $this->table_name . " (username, email, password) VALUES (:username, :email, :password)";
+        $query = "INSERT INTO " . $this->table_name . " (username, email, password, phone) 
+                  VALUES (:username, :email, :password, :phone)";
+
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':username', $username);
         $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':password', $password); // Lưu trực tiếp plain text
+        $stmt->bindParam(':password', $password); // Lưu plain text
+        $stmt->bindParam(':phone', $phone);
 
         return $stmt->execute();
     }
+
     public function createAccount($username, $email, $password, $role, $name, $address, $phone, $mail_send = 0)
     {
         // Kiểm tra username hoặc email đã tồn tại

@@ -58,10 +58,59 @@ class Product
     }
     public function getBySlug($slug)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM products WHERE slug = ?");
-        $stmt->execute([$slug]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            if ($this->conn === null) {
+                throw new Exception("Không thể kết nối cơ sở dữ liệu.");
+            }
+
+            $stmt = $this->conn->prepare("
+                SELECT p.*, pi.ID as image_id, pi.image_url, pi.is_main
+                FROM products p
+                LEFT JOIN product_images pi ON p.ID = pi.product_id
+                WHERE p.slug = :slug
+            ");
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($rows)) {
+                return [];
+            }
+
+            // Lấy thông tin sản phẩm từ dòng đầu tiên
+            $product = [
+                'ID' => $rows[0]['ID'],
+                'name' => $rows[0]['name'],
+                'slug' => $rows[0]['slug'],
+                'price' => $rows[0]['price'],
+                'quantity' => $rows[0]['quantity'],
+                'description' => $rows[0]['description'],
+                'created_at' => $rows[0]['created_at'],
+                'top' => $rows[0]['top'],
+                'is_locked' => $rows[0]['is_locked'],
+                'category_id' => $rows[0]['category_id'],
+                'images' => []
+            ];
+
+            // Lặp để gom ảnh
+            foreach ($rows as $row) {
+                if (!empty($row['image_id'])) {
+                    $product['images'][] = [
+                        'ID' => $row['image_id'],
+                        'image_url' => $row['image_url'],
+                        'is_main' => $row['is_main']
+                    ];
+                }
+            }
+
+            return $product;
+        } catch (Exception $e) {
+            error_log("Lỗi getBySlug: " . $e->getMessage());
+            return [];
+        }
     }
+
+
 
     public function getAlltop()
     {
