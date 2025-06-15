@@ -9,10 +9,13 @@ function formatDescription($description)
     $tableRows = [];
 
     foreach ($lines as $index => $line) {
-        $line = trim($line);
+        // Chuẩn hóa dòng: loại bỏ ký tự thừa và khoảng trắng không cần thiết
+        $line = preg_replace('/\s+/', ' ', trim($line)); // Thay nhiều khoảng trắng bằng một khoảng
+        $line = str_replace("\r", '', $line); // Loại bỏ ký tự \r
         if (empty($line)) continue;
 
-        if (preg_match('/^\$(.+?)\$$/', $line, $matches)) {
+        // Xử lý tiêu đề ($...$)
+        if (preg_match('/^\$(.+?)\$\s*$/', $line, $matches)) {
             if ($inTable && !empty($tableRows)) {
                 $formatted .= renderTable($tableRows);
                 $tableRows = [];
@@ -22,16 +25,18 @@ function formatDescription($description)
             continue;
         }
 
-        if (preg_match('/^\*(.+?)\*$/', $line, $matches)) {
+        // Xử lý danh sách (*...*)
+        if (preg_match('/^\*\s*(.+?)\s*\*$/', $line, $matches)) {
             if ($inTable && !empty($tableRows)) {
                 $formatted .= renderTable($tableRows);
                 $tableRows = [];
                 $inTable = false;
             }
-            $formatted .= '<li class="text-gray-600 text-base mb-1 ml-4 list-disc">' . htmlspecialchars($matches[1]) . '</li>';
+            $formatted .= '<li class="text-gray-600 text-base mb-1 ml-4 list-disc">' . htmlspecialchars(trim($matches[1])) . '</li>';
             continue;
         }
 
+        // Xử lý bảng (dấu |)
         if (strpos($line, '|') !== false) {
             $inTable = true;
             $tableRows[] = $line;
@@ -44,6 +49,7 @@ function formatDescription($description)
             continue;
         }
 
+        // Xử lý đoạn văn
         if ($inTable && !empty($tableRows)) {
             $formatted .= renderTable($tableRows);
             $tableRows = [];
@@ -59,9 +65,12 @@ function formatDescription($description)
         $formatted .= renderTable($tableRows);
     }
 
-    if (strpos($formatted, '<li') !== false) {
-        $formatted = preg_replace('/(<li class="text-gray-600 text-base mb-1 ml-4 list-disc">.*?<\/li>)+/', '<ul>$0</ul>', $formatted);
-    }
+    // Gộp <li> thành <ul>
+    $formatted = preg_replace_callback(
+        '/((<li class="text-gray-600 text-base mb-1 ml-4 list-disc">.*?<\/li>\s*)+)/',
+        fn($m) => '<ul>' . $m[1] . '</ul>',
+        $formatted
+    );
 
     return $formatted;
 }

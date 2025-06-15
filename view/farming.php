@@ -301,11 +301,16 @@
                         <div class="col-lg-4 col-md-6 mb-4">
                             <article class="post-item card border-1 border-success shadow-sm h-100">
                                 <div class="image-holder zoom-effect">
-                                    <a href="?controller=farming_process&action=detail_fm&id=<?= htmlspecialchars($process['ID'] ?? '') ?>" aria-label="Xem chi tiết quy trình">
-                                        <img src="<?= htmlspecialchars($process['image_url'] ?? '/public/img/default.jpg') ?>"
-                                            alt="<?= htmlspecialchars($process['title'] ?? 'Hình ảnh quy trình chăn nuôi') ?>"
-                                            class="card-img-top" loading="lazy" />
-                                    </a>
+                                    <?php
+                                    $slug = !empty($process['slug']) ? urlencode($process['slug']) : '';
+                                    ?>
+                                    <a href="/fm/<?php echo $slug !== '' ? $slug : '?controller=farming_process&action=detail_fm&id=' . $process['ID']; ?>" title="<?php echo htmlspecialchars($process['title']); ?>">
+
+                                        <!-- <a href="?controller=farming_process&action=detail_fm&id=<?= htmlspecialchars($process['ID'] ?? '') ?>" aria-label="Xem chi tiết quy trình"> -->
+                                            <img src="<?= htmlspecialchars($process['image_url'] ?? '/public/img/default.jpg') ?>"
+                                                alt="<?= htmlspecialchars($process['title'] ?? 'Hình ảnh quy trình chăn nuôi') ?>"
+                                                class="card-img-top" loading="lazy" />
+                                        </a>
                                 </div>
                                 <div class="card-body">
                                     <div class="post-meta d-flex text-uppercase gap-3 my-3 align-items-center">

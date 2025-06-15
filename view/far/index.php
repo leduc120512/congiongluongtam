@@ -217,16 +217,16 @@
                 <h2>Danh mục chăn nuôi</h2>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <form action="?controller=category_faming&action=index" method="GET" class="input-group">
-                            <input type="hidden" name="controller" value="category_faming">
+                        <form action="?controller=category_fm&action=index" method="GET" class="input-group">
+                            <input type="hidden" name="controller" value="category_fm">
                             <input type="hidden" name="action" value="index">
                             <input type="text" name="search" class="form-control" placeholder="Tìm theo tên" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
                             <button type="submit" class="btn btn-primary">Tên</button>
                         </form>
                     </div>
                     <div class="col-md-6 text-end">
-                        <a href="?controller=category_faming&action=create_category" class="btn btn-primary">Thêm danh mục quản lí chăn nuôi</a>
-                        <a href="?controller=category_faming&action=index&top_only=1" class="btn btn-secondary">Top chăn nuôi</a>
+                        <a href="?controller=category_fm&action=create_category" class="btn btn-primary">Thêm danh mục quản lí chăn nuôi</a>
+                        <a href="?controller=category_fm&action=index&top_only=1" class="btn btn-secondary">Top chăn nuôi</a>
                     </div>
                 </div>
                 <table class="table table-bordered">
@@ -249,8 +249,8 @@
                                 <td><?php echo $category['top'] ? 'Top' : 'Không'; ?></td>
                                 <td><?php echo htmlspecialchars($category['created_at']); ?></td>
                                 <td>
-                                    <a href="?controller=category_faming&action=edit_category&id=<?php echo $category['id']; ?>" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a href="?controller=category_faming&action=delete_category&id=<?php echo $category['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Có chắc sẽ xóa?')">Xóa</a>
+                                    <a href="?controller=category_fm&action=edit_category&id=<?php echo $category['id']; ?>" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a href="?controller=category_fm&action=delete_category&id=<?php echo $category['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Có chắc sẽ xóa?')">Xóa</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

@@ -12,18 +12,18 @@ class FarmingProcessModel
         try {
             if ($category_id_fm) {
                 $stmt = $this->conn->prepare("
-                SELECT ID, title, description, image_url, created_at, note
-                FROM farming_process
-                WHERE category_id = :category_id_fm
-                ORDER BY created_at DESC
-            ");
+                    SELECT ID, title, slug, description, image_url, created_at, note
+                    FROM farming_process
+                    WHERE category_id = :category_id_fm
+                    ORDER BY created_at DESC
+                ");
                 $stmt->bindParam(':category_id_fm', $category_id_fm, PDO::PARAM_INT);
             } else {
                 $stmt = $this->conn->prepare("
-                SELECT ID, title, description, image_url, created_at, note
-                FROM farming_process
-                ORDER BY created_at DESC
-            ");
+                    SELECT ID, title, slug, description, image_url, created_at, note
+                    FROM farming_process
+                    ORDER BY created_at DESC
+                ");
             }
 
             $stmt->execute();
@@ -33,6 +33,23 @@ class FarmingProcessModel
             return [];
         }
     }
+    public function getBySlug($slug)
+    {
+        try {
+            $stmt = $this->conn->prepare("
+                SELECT * FROM farming_process
+                WHERE slug = :slug
+                LIMIT 1
+            ");
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error fetching farming process by slug: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getAllMain()
     {
         try {
@@ -77,16 +94,23 @@ LIMIT 10
             return false;
         }
     }
+    public function slugExists($slug)
+    {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM farming_process WHERE slug = ?");
+        $stmt->execute([$slug]);
+        return $stmt->fetchColumn() > 0;
+    }
 
-    public function add($title, $description, $process_order, $start_day, $end_day, $note, $image_url = null, $video_url = null, $category_id = 1)
+    public function add($title, $slug, $description, $process_order, $start_day, $end_day, $note, $image_url = null, $video_url = null, $category_id = 1)
     {
         try {
             $this->conn->beginTransaction();
             $stmt = $this->conn->prepare("
-                INSERT INTO farming_process (title, description, process_order, start_day, end_day, note, image_url, video_url, category_id, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                INSERT INTO farming_process 
+                (title, slug, description, process_order, start_day, end_day, note, image_url, video_url, category_id, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ");
-            $stmt->execute([$title, $description, $process_order, $start_day, $end_day, $note, $image_url, $video_url, $category_id]);
+            $stmt->execute([$title, $slug, $description, $process_order, $start_day, $end_day, $note, $image_url, $video_url, $category_id]);
             $this->conn->commit();
             return true;
         } catch (PDOException $e) {

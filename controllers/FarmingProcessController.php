@@ -126,49 +126,163 @@ class FarmingProcessController
         $categoryFmProducts = $this->product->getAllCategory();
         require_once __DIR__ . '/../view/detailfm.php';
     }
+    public function detailBySlug($slug)
+    {
+        $farmingProcess = $this->farmingProcess->getBySlug($slug);
+        if (!$farmingProcess) {
+            echo "Không tìm thấy nội dung chăn nuôi.";
+            exit;
+        }
+
+        require_once __DIR__ . '/../view/detailfm.php';
+    }
+
+    // public function add()
+    // {
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $title = $_POST['title'] ?? '';
+    //         $description = $_POST['description'] ?? '';
+    //         $process_order = $_POST['process_order'] ?? 0;
+    //         $start_day = $_POST['start_day'] ?? 0;
+    //         $end_day = $_POST['end_day'] ?? 0;
+    //         $note = $_POST['note'] ?? '';
+    //         $category_id = $_POST['category_id'] ?? 1;
+    //         $image_url = null;
+    //         $video_url = null;
+
+    //         // Handle image upload
+    //         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    //             $upload_dir = "../public/img/";
+    //             $image_name = uniqid() . '_' . basename($_FILES['image']['name']);
+    //             $image_url = $upload_dir . $image_name;
+    //             move_uploaded_file($_FILES['image']['tmp_name'], $image_url);
+    //         }
+
+    //         // Handle video upload
+    //         if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
+    //             $upload_dir = "../public/video/";
+    //             $video_name = uniqid() . '_' . basename($_FILES['video']['name']);
+    //             $video_url = $upload_dir . $video_name;
+    //             move_uploaded_file($_FILES['video']['tmp_name'], $video_url);
+    //         }
+
+    //         $result = $this->farmingProcess->add($title, $description, $process_order, $start_day, $end_day, $note, $image_url, $video_url, $category_id);
+
+    //         if ($result === true) {
+    //             header("Location: ?controller=farming_process&action=manage&success=added");
+    //             exit;
+    //         } else {
+    //             $error = $result['message'] ?? 'Error adding farming process';
+    //             require __DIR__ . '/../view/admin_farming_process_add.php';
+    //         }
+    //     } else {
+    //         $categories = $this->farmingProcess->CatergorygetAllfm();
+    //         require __DIR__ . '/../view/admin_farming_process_add.php';
+    //     }
+    // }
+    private function isAjaxRequest()
+    {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    }
+
     public function add()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $title = $_POST['title'] ?? '';
-            $description = $_POST['description'] ?? '';
-            $process_order = $_POST['process_order'] ?? 0;
-            $start_day = $_POST['start_day'] ?? 0;
-            $end_day = $_POST['end_day'] ?? 0;
-            $note = $_POST['note'] ?? '';
-            $category_id = $_POST['category_id'] ?? 1;
-            $image_url = null;
-            $video_url = null;
-
-            // Handle image upload
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = "../public/img/";
-                $image_name = uniqid() . '_' . basename($_FILES['image']['name']);
-                $image_url = $upload_dir . $image_name;
-                move_uploaded_file($_FILES['image']['tmp_name'], $image_url);
-            }
-
-            // Handle video upload
-            if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = "../public/video/";
-                $video_name = uniqid() . '_' . basename($_FILES['video']['name']);
-                $video_url = $upload_dir . $video_name;
-                move_uploaded_file($_FILES['video']['tmp_name'], $video_url);
-            }
-
-            $result = $this->farmingProcess->add($title, $description, $process_order, $start_day, $end_day, $note, $image_url, $video_url, $category_id);
-
-            if ($result === true) {
-                header("Location: ?controller=farming_process&action=manage&success=added");
-                exit;
-            } else {
-                $error = $result['message'] ?? 'Error adding farming process';
-                require __DIR__ . '/../view/admin_farming_process_add.php';
-            }
-        } else {
-            $categories = $this->farmingProcess->CatergorygetAllfm();
-            require __DIR__ . '/../view/admin_farming_process_add.php';
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: ?controller=auth&action=login");
+            exit;
         }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once __DIR__ . '/../models/slug_generator.php';
+
+            // Lấy dữ liệu form
+            $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_SPECIAL_CHARS);
+            $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_SPECIAL_CHARS);
+            $process_order = filter_input(INPUT_POST, 'process_order', FILTER_VALIDATE_INT);
+            $start_day = filter_input(INPUT_POST, 'start_day', FILTER_VALIDATE_INT);
+            $end_day = filter_input(INPUT_POST, 'end_day', FILTER_VALIDATE_INT);
+            $note = filter_input(INPUT_POST, 'note', FILTER_SANITIZE_SPECIAL_CHARS);
+            $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT) ?: 1;
+
+            // Kiểm tra dữ liệu bắt buộc
+            if (!$title || $process_order === false || $start_day === false || $end_day === false || !$category_id) {
+                $error = 'Vui lòng điền đúng các trường bắt buộc.';
+                $categories = $this->farmingProcess->CatergorygetAllfm();
+                require __DIR__ . '/../view/admin_farming_process_add.php';
+                return;
+            }
+
+            // Tạo slug không trùng
+            $baseSlug = generateSlug($title);
+            $slug = $baseSlug;
+            $counter = 1;
+            while ($this->farmingProcess->slugExists($slug)) {
+                $slug = $baseSlug . '-' . $counter++;
+            }
+
+            // Upload ảnh
+            $image_url = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $img_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+                $img_name = uniqid('img_') . '.' . $img_ext;
+                $upload_dir = realpath(__DIR__ . '/../public/img') . '/';
+
+                if (is_writable($upload_dir)) {
+                    $image_path = $upload_dir . $img_name;
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
+                        $image_url = 'public/img/' . $img_name;
+                    }
+                }
+            }
+
+            // Upload video
+            $video_url = null;
+            if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
+                $vid_ext = strtolower(pathinfo($_FILES['video']['name'], PATHINFO_EXTENSION));
+                $vid_name = uniqid('vid_') . '.' . $vid_ext;
+                $video_dir = realpath(__DIR__ . '/../public/video') . '/';
+
+                if (is_writable($video_dir)) {
+                    $video_path = $video_dir . $vid_name;
+                    if (move_uploaded_file($_FILES['video']['tmp_name'], $video_path)) {
+                        $video_url = 'public/video/' . $vid_name;
+                    }
+                }
+            }
+
+            // Gọi model
+            $result = $this->farmingProcess->add(
+                $title,
+                $slug,
+                $description,
+                $process_order,
+                $start_day,
+                $end_day,
+                $note,
+                $image_url,
+                $video_url,
+                $category_id
+            );
+
+            if (is_array($result) && !$result['success']) {
+                $error = $result['message'];
+                $categories = $this->farmingProcess->CatergorygetAllfm();
+                require __DIR__ . '/../view/admin_farming_process_add.php';
+                return;
+            }
+
+            // Thành công → chuyển hướng về danh sách
+            header("Location: ?controller=farming_process&action=manage");
+            exit;
+        }
+
+        // Hiển thị form nếu chưa POST
+        $categories = $this->farmingProcess->CatergorygetAllfm();
+        require __DIR__ . '/../view/admin_farming_process_add.php';
     }
+
+
     public function edit($id)
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -184,7 +298,7 @@ class FarmingProcessController
 
             // Handle new image upload
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = "../public/img/";
+                $upload_dir = "";
                 $image_name = uniqid() . '_' . basename($_FILES['image']['name']);
                 $image_url = $upload_dir . $image_name;
                 move_uploaded_file($_FILES['image']['tmp_name'], $image_url);
@@ -192,7 +306,7 @@ class FarmingProcessController
 
             // Handle new video upload
             if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = "../public/video/";
+                $upload_dir = "";
                 $video_name = uniqid() . '_' . basename($_FILES['video']['name']);
                 $video_url = $upload_dir . $video_name;
                 move_uploaded_file($_FILES['video']['tmp_name'], $video_url);
@@ -246,7 +360,7 @@ class FarmingProcessController
     {
         if ($_SESSION['role'] !== 'admin') return;
         $this->farmingProcess->delete($id);
-        header("Location: ?controller=product&action=manage");
+        header("Location: ?controller=farming_process&action=manage");
     }
 
     public function manage()
@@ -286,8 +400,8 @@ class FarmingProcessController
             $description = $_POST['description'] ?? '';
             $top = isset($_POST['top']) ? 1 : 0;
 
-            if ($this->create($name, $description, $top)) {
-                header("Location: ?controller=category_art&action=index");
+            if ($this->farmingProcess->create($name, $description, $top)) {
+                header("Location: ?controller=category_fm&action=index");
                 exit;
             } else {
                 // Xử lý lỗi, ví dụ hiển thị thông báo
@@ -307,7 +421,7 @@ class FarmingProcessController
             $top = isset($_POST['top']) ? 1 : 0;
 
             if ($this->farmingProcess->update_category($id, $name, $description, $top)) {
-                header("Location: ?controller=category_art&action=index");
+                header("Location: ?controller=category_fm&action=index");
                 exit;
             } else {
                 // Xử lý lỗi
@@ -326,7 +440,7 @@ class FarmingProcessController
     public function delete_category($id)
     {
         if ($this->farmingProcess->delete_category($id)) {
-            header("Location: ?controller=category_faming&action=index");
+            header("Location: ?controller=category_fm&action=index");
             exit;
         } else {
             echo "Lỗi khi xóa danh mục.";

@@ -56,60 +56,32 @@ class Product
             return [];
         }
     }
-    public function getBySlug($slug)
+    public function generateSlug($string)
     {
-        try {
-            if ($this->conn === null) {
-                throw new Exception("Không thể kết nối cơ sở dữ liệu.");
-            }
+        // Bỏ dấu tiếng Việt
+        $slug = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+        $slug = strtolower($slug);
+        $slug = preg_replace('/[^a-z0-9]+/i', '-', $slug);
+        $slug = trim($slug, '-');
 
-            $stmt = $this->conn->prepare("
-                SELECT p.*, pi.ID as image_id, pi.image_url, pi.is_main
-                FROM products p
-                LEFT JOIN product_images pi ON p.ID = pi.product_id
-                WHERE p.slug = :slug
-            ");
-            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
-            $stmt->execute();
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if (empty($rows)) {
-                return [];
-            }
-
-            // Lấy thông tin sản phẩm từ dòng đầu tiên
-            $product = [
-                'ID' => $rows[0]['ID'],
-                'name' => $rows[0]['name'],
-                'slug' => $rows[0]['slug'],
-                'price' => $rows[0]['price'],
-                'quantity' => $rows[0]['quantity'],
-                'description' => $rows[0]['description'],
-                'created_at' => $rows[0]['created_at'],
-                'top' => $rows[0]['top'],
-                'is_locked' => $rows[0]['is_locked'],
-                'category_id' => $rows[0]['category_id'],
-                'images' => []
-            ];
-
-            // Lặp để gom ảnh
-            foreach ($rows as $row) {
-                if (!empty($row['image_id'])) {
-                    $product['images'][] = [
-                        'ID' => $row['image_id'],
-                        'image_url' => $row['image_url'],
-                        'is_main' => $row['is_main']
-                    ];
-                }
-            }
-
-            return $product;
-        } catch (Exception $e) {
-            error_log("Lỗi getBySlug: " . $e->getMessage());
-            return [];
+        // Kiểm tra trùng và thêm hậu tố nếu cần
+        $baseSlug = $slug;
+        $i = 1;
+        while ($this->isSlugExists($slug)) {
+            $slug = $baseSlug . '-' . $i;
+            $i++;
         }
+
+        return $slug;
     }
 
+    private function isSlugExists($slug)
+    {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM products WHERE slug = :slug");
+        $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
 
 
     public function getAlltop()
@@ -120,11 +92,11 @@ class Product
             }
             // Lấy tất cả sản phẩm và ảnh liên quan trong một truy vấn
             $stmt = $this->conn->prepare("
-            SELECT p.*, pi.image_url, pi.is_main
-            FROM products p
-            LEFT JOIN product_images pi ON p.ID = pi.product_id
-            WHERE p.is_locked = 0 and p.top=1
-            ORDER BY p.ID ASC, pi.is_main DESC, pi.created_at ASC
+           SELECT p.*, pi.image_url, pi.is_main, p.slug
+FROM products p
+LEFT JOIN product_images pi ON p.ID = pi.product_id
+WHERE p.is_locked = 0 AND p.top = 1
+ORDER BY p.ID ASC, pi.is_main DESC, pi.created_at ASC
         ");
 
             $stmt->execute();
@@ -143,6 +115,7 @@ class Product
                         'description' => $row['description'],
                         'created_at' => $row['created_at'],
                         'category_id' => $row['category_id'],
+                        'slug' => $row['slug'],
                         'is_locked' => $row['is_locked'],
                         'images' => []
                     ];
@@ -361,6 +334,57 @@ class Product
             return 0;
         }
     }
+    public function getBySlug($slug)
+    {
+        try {
+            if ($this->conn === null) {
+                throw new Exception("Không thể kết nối cơ sở dữ liệu.");
+            }
+
+            $stmt = $this->conn->prepare("
+                SELECT p.*, pi.image_url, pi.is_main
+                FROM products p
+                LEFT JOIN product_images pi ON p.ID = pi.product_id
+                WHERE p.slug = :slug
+                ORDER BY pi.is_main DESC, pi.created_at ASC
+            ");
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($rows)) {
+                return false;
+            }
+
+            $product = [
+                'ID' => $rows[0]['ID'],
+                'name' => $rows[0]['name'],
+                'price' => $rows[0]['price'],
+                'quantity' => $rows[0]['quantity'],
+                'description' => $rows[0]['description'],
+                'created_at' => $rows[0]['created_at'],
+                'category_id' => $rows[0]['category_id'],
+                'is_locked' => $rows[0]['is_locked'],
+                'slug' => $rows[0]['slug'],
+                'images' => []
+            ];
+
+            foreach ($rows as $row) {
+                if ($row['image_url']) {
+                    $product['images'][] = [
+                        'image_url' => $row['image_url'],
+                        'is_main' => $row['is_main']
+                    ];
+                }
+            }
+
+            return $product;
+        } catch (Exception $e) {
+            error_log("Lỗi khi lấy sản phẩm theo slug: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     public function getLatest()
     {
@@ -408,97 +432,193 @@ class Product
             return [];
         }
     }
-
-    public function add($name, $price, $quantity, $description, $category_id, $top, $image_urls = [])
+    public function add($name, $price, $quantity, $description, $category_id, $top, $slug, $image_urls = [])
     {
         try {
             if ($this->conn === null) {
-                throw new Exception("Không thể kết nối cơ sở dữ liệu.");
+                throw new Exception("Không thể kết nối CSDL.");
             }
-            $this->conn->beginTransaction();
-            $stmt = $this->conn->prepare("
-                INSERT INTO products (name, price, quantity, description, category_id, top, created_at)
-                VALUES (:name, :price, :quantity, :description, :category_id, :top, NOW())
-            ");
-            $stmt->bindParam(':name', $name, PDO::PARAM_STR);
-            $stmt->bindParam(':price', $price, PDO::PARAM_STR);
-            $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-            $stmt->bindParam(':description', $description, PDO::PARAM_STR);
-            $stmt->bindParam(':category_id', $category_id, PDO::PARAM_INT);
-            $stmt->bindParam(':top', $top, PDO::PARAM_BOOL);
-            $stmt->execute();
-            $product_id = $this->conn->lastInsertId();
 
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conn->beginTransaction();
+
+            // 1. Thêm sản phẩm
+            $stmt = $this->conn->prepare("
+                INSERT INTO products 
+                (name, price, quantity, description, category_id, top, slug, created_at) 
+                VALUES (:name, :price, :quantity, :description, :category_id, :top, :slug, CURRENT_TIMESTAMP)
+            ");
+
+            $stmt->execute([
+                ':name' => $name,
+                ':price' => (float)$price,
+                ':quantity' => (int)$quantity,
+                ':description' => $description,
+                ':category_id' => (int)$category_id,
+                ':top' => $top ? 1 : 0,
+                ':slug' => $slug,
+            ]);
+
+            $product_id = $this->conn->lastInsertId();
+            error_log("✅ Thêm sản phẩm ID = $product_id thành công");
+
+            // 2. Thêm ảnh
             if (!empty($image_urls)) {
-                $stmt = $this->conn->prepare("
+                $stmtImg = $this->conn->prepare("
                     INSERT INTO product_images (product_id, image_url, is_main, created_at)
-                    VALUES (:product_id, :image_url, :is_main, NOW())
+                    VALUES (:product_id, :image_url, :is_main, CURRENT_TIMESTAMP)
                 ");
+
                 foreach ($image_urls as $index => $image_url) {
-                    $is_main = ($index === 0) ? true : false;
-                    $stmt->bindParam(':product_id', $product_id, PDO::PARAM_INT);
-                    $stmt->bindParam(':image_url', $image_url, PDO::PARAM_STR);
-                    $stmt->bindParam(':is_main', $is_main, PDO::PARAM_BOOL);
-                    $stmt->execute();
+                    $is_main = ($index === 0) ? 1 : 0;
+
+                    $success = $stmtImg->execute([
+                        ':product_id' => $product_id,
+                        ':image_url' => $image_url,
+                        ':is_main' => $is_main,
+                    ]);
+
+                    if (!$success) {
+                        error_log("❌ Lỗi khi thêm ảnh: $image_url → " . print_r($stmtImg->errorInfo(), true));
+                        throw new Exception("Không thể thêm ảnh sản phẩm: $image_url");
+                    }
+
+                    error_log("📸 Đã thêm ảnh $image_url (main = $is_main)");
                 }
             }
 
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
-            $this->conn->rollBack();
-            error_log("Lỗi khi thêm sản phẩm: " . $e->getMessage());
+            if ($this->conn && $this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+
+            error_log("❌ Exception ERROR: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Lỗi khi thêm sản phẩm',
+                'error_detail' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ];
+        }
+    }
+
+
+
+
+    public function slugExists($slug)
+    {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM products WHERE slug = :slug");
+        $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+    public function slugExistsExcept($slug, $exclude_product_id)
+    {
+        try {
+            $stmt = $this->conn->prepare("
+                SELECT COUNT(*) 
+                FROM products 
+                WHERE slug = :slug AND id != :exclude_id
+            ");
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+            $stmt->bindParam(':exclude_id', $exclude_product_id, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchColumn() > 0;
+        } catch (Exception $e) {
+            error_log("❌ Lỗi kiểm tra slug: " . $e->getMessage());
             return false;
         }
     }
-    public function edit($product_id, $name, $price, $quantity, $description, $category_id, $is_locked, $top, $image_urls = [])
+
+    public function edit($product_id, $name, $price, $quantity, $description, $category_id, $is_locked, $top, $slug, $image_urls = [])
     {
         try {
             if ($this->conn === null) {
                 throw new Exception("Không thể kết nối cơ sở dữ liệu.");
             }
+
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->beginTransaction();
 
-            // Update product details
             $stmt = $this->conn->prepare("
                 UPDATE products 
-                SET name = :name, price = :price, quantity = :quantity, description = :description, 
-                    category_id = :category_id, is_locked = :is_locked, top = :top
-                WHERE ID = :product_id
+                SET name = :name,
+                    price = :price,
+                    quantity = :quantity,
+                    description = :description,
+                    category_id = :category_id,
+                    is_locked = :is_locked,
+                    top = :top,
+                    slug = :slug,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :product_id
             ");
-            $stmt->bindParam(':name', $name, PDO::PARAM_STR);
-            $stmt->bindParam(':price', $price, PDO::PARAM_STR);
-            $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
-            $stmt->bindParam(':description', $description, PDO::PARAM_STR);
-            $stmt->bindParam(':category_id', $category_id, PDO::PARAM_INT);
-            $stmt->bindParam(':is_locked', $is_locked, PDO::PARAM_BOOL);
-            $stmt->bindParam(':top', $top, PDO::PARAM_BOOL);
-            $stmt->bindParam(':product_id', $product_id, PDO::PARAM_INT);
-            $stmt->execute();
 
-            // Insert new images if any
+            $stmt->execute([
+                ':name' => $name,
+                ':price' => (float)$price,
+                ':quantity' => (int)$quantity,
+                ':description' => $description,
+                ':category_id' => (int)$category_id,
+                ':is_locked' => $is_locked ? 1 : 0,
+                ':top' => $top ? 1 : 0,
+                ':slug' => $slug,
+                ':product_id' => (int)$product_id,
+            ]);
+
+            $affected = $stmt->rowCount();
+            error_log("🛠️ Cập nhật sản phẩm ID = $product_id, dòng bị ảnh hưởng: $affected");
+
+            if (!is_array($image_urls)) {
+                $image_urls = [];
+            }
+
             if (!empty($image_urls)) {
-                $stmt = $this->conn->prepare("
+                $has_main = $this->hasMainImage($product_id);
+
+                $stmtImg = $this->conn->prepare("
                     INSERT INTO product_images (product_id, image_url, is_main, created_at)
-                    VALUES (:product_id, :image_url, :is_main, NOW())
+                    VALUES (:product_id, :image_url, :is_main, CURRENT_TIMESTAMP)
                 ");
+
                 foreach ($image_urls as $index => $image_url) {
-                    $is_main = ($index === 0 && !$this->hasMainImage($product_id)) ? true : false;
-                    $stmt->bindParam(':product_id', $product_id, PDO::PARAM_INT);
-                    $stmt->bindParam(':image_url', $image_url, PDO::PARAM_STR);
-                    $stmt->bindParam(':is_main', $is_main, PDO::PARAM_BOOL);
-                    $stmt->execute();
+                    $is_main = (!$has_main && $index === 0) ? 1 : 0;
+
+                    $stmtImg->execute([
+                        ':product_id' => $product_id,
+                        ':image_url' => $image_url,
+                        ':is_main' => $is_main,
+                    ]);
                 }
             }
 
             $this->conn->commit();
+
+            if ($affected === 0 && empty($image_urls)) {
+                return [
+                    'success' => false,
+                    'message' => 'Không có thay đổi nào được thực hiện.'
+                ];
+            }
+
             return true;
         } catch (Exception $e) {
-            $this->conn->rollBack();
-            error_log("Lỗi khi sửa sản phẩm: " . $e->getMessage());
-            return false;
+            if ($this->conn && $this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+            error_log("❌ Exception khi sửa sản phẩm: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Lỗi khi cập nhật sản phẩm',
+                'error_detail' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ];
         }
     }
+
+
 
     // Helper method to check if a product has a main image
     private function hasMainImage($product_id)
@@ -727,7 +847,7 @@ class Product
             $sort = strtoupper($sort) === 'DESC' ? 'DESC' : 'ASC';
 
             $sql = "
-                SELECT p.*, pi.image_url, pi.is_main
+                SELECT p.*, pi.image_url, pi.is_main,p.slug
                 FROM products p
                 LEFT JOIN product_images pi ON p.ID = pi.product_id
                 WHERE p.name LIKE :keyword and p.is_locked = 0
@@ -769,6 +889,7 @@ class Product
                         'description' => $row['description'],
                         'created_at' => $row['created_at'],
                         'category_id' => $row['category_id'],
+                        'slug' => $row['slug'],
                         'is_locked' => $row['is_locked'],
                         'images' => [] // Gộp ảnh vào đây
                     ];
@@ -854,6 +975,25 @@ class Product
             }
             $query = "SELECT ID, name, description, top, created_at FROM " . $this->table_name . " WHERE top = 1 ";
            
+            $query .= " ORDER BY name ASC";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("getAllCategory: Found " . count($categories) . " categories");
+            return $categories;
+        } catch (Exception $e) {
+            error_log("Lỗi khi lấy danh mục: " . $e->getMessage());
+            return [];
+        }
+    }
+    public function getAllCategoryNotp($top_only = false)
+    {
+        try {
+            if ($this->conn === null) {
+                throw new Exception("Không thể kết nối cơ sở dữ liệu.");
+            }
+            $query = "SELECT ID, name, description, top, created_at FROM " . $this->table_name ;
+
             $query .= " ORDER BY name ASC";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
@@ -995,7 +1135,7 @@ class Product
 
             // B2: Lấy sản phẩm + ảnh theo ID
             $sql = "
-            SELECT p.*, pi.image_url, pi.is_main
+            SELECT p.*, pi.image_url, pi.is_main,p.slug
             FROM products p
             LEFT JOIN product_images pi ON p.ID = pi.product_id
             WHERE p.ID IN ($placeholders) and p.is_locked = 0
@@ -1020,6 +1160,7 @@ class Product
                         'quantity' => $row['quantity'],
                         'description' => $row['description'],
                         'created_at' => $row['created_at'],
+                        'slug' => $row['slug'],
                         'category_id' => $row['category_id'],
                         'is_locked' => $row['is_locked'],
                         'images' => []

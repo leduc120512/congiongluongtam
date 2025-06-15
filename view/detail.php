@@ -534,6 +534,7 @@ require_once __DIR__ . '/../Format/description_formatter.php';
                         <!-- Product Details -->
                         <div class="md:w-1/2">
                             <h1 class="product-title"><?php echo htmlspecialchars($product['name']); ?></h1>
+
                             <p class="product-price"><?php echo number_format($product['price'], 0, ',', '.') . ' VND'; ?></p>
 
 
@@ -551,8 +552,21 @@ require_once __DIR__ . '/../Format/description_formatter.php';
                         </div>
                     </div>
                     <div class="text-gray-600 mb-2"><strong>Mô tả:</strong>
-                        <?php echo formatDescription($product['description']); ?>
+                        <?php
+                        $raw = $product['description'];
+
+                        // Bước 1: Giải mã các ký tự HTML như &#13;, &#10;, &amp;, ...
+                        $decoded = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                        // Bước 2: Chuẩn hóa tất cả dòng xuống thành \n (dòng mới)
+                        $normalized = str_replace(["\r\n", "\r", "\n", "&#13;", "&#10;"], "\n", $decoded);
+
+                        // Bước 3: Gọi hàm format để hiển thị đẹp
+                        echo formatDescription($normalized);
+                        ?>
                     </div>
+
+
                     <!-- Reviews -->
                     <h3 class="section-title">Đánh giá sản phẩm</h3>
                     <p class="text-gray-600 mb-4">
@@ -779,9 +793,12 @@ require_once __DIR__ . '/../Format/description_formatter.php';
             nextBtn.addEventListener('click', () => showSlide(currentIndex + 1));
         }
 
+
+
         thumbnails.forEach((thumb, index) => {
             thumb.addEventListener('click', () => showSlide(index));
         });
+
 
         if (slides.length > 0) showSlide(0);
 
@@ -894,15 +911,17 @@ require_once __DIR__ . '/../Format/description_formatter.php';
         const thumbnails = document.querySelectorAll('.thumb-img');
         const mainImage = document.getElementById('mainImage');
 
-        thumbnails.forEach((thumb) => {
-            thumb.addEventListener('click', () => {
-                const newSrc = thumb.getAttribute('data-full');
-                mainImage.src = newSrc;
+        if (thumbnails.length && mainImage) {
+            thumbnails.forEach((thumb, index) => {
+                thumb.addEventListener('click', () => {
+                    const newSrc = thumb.getAttribute('data-full');
+                    mainImage.src = newSrc;
 
-                thumbnails.forEach(t => t.classList.remove('active'));
-                thumb.classList.add('active');
+                    thumbnails.forEach(t => t.classList.remove('active'));
+                    thumb.classList.add('active');
+                });
             });
-        });
+        }
     </script>
 
     <script>
@@ -969,7 +988,7 @@ require_once __DIR__ . '/../Format/description_formatter.php';
                     didOpen: () => Swal.showLoading()
                 });
 
-                fetch('?controller=order&action=create', {
+                fetch('/?controller=order&action=create', {
                         method: 'POST',
                         body: formData
                     })

@@ -241,6 +241,7 @@
                         <label for="note" class="form-label">Note</label>
                         <input type="text" class="form-control" id="note" name="note">
                     </div>
+
                     <div class="mb-3">
                         <label for="category_id" class="form-label">Category</label>
                         <select class="form-control" id="category_id" name="category_id">
@@ -257,6 +258,7 @@
                         <label for="video" class="form-label">Video</label>
                         <input type="file" class="form-control" id="video" name="video" accept="video/*">
                     </div>
+                    <input type="hidden" name="add_farming_process" value="1">
                     <button type="submit" class="btn btn-primary">Add Process</button>
                 </form>
             </div>

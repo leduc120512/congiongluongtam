@@ -324,6 +324,106 @@
     background-color: #d35400;
     /* Cam đậm hơn */
   }
+
+
+
+  .category-container {
+    width: 100%;
+    padding: 10px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .category-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: 44%;
+    /* Khoảng 1/3 chiều rộng cho 3 mục trên hàng đầu tiên */
+  }
+
+  /* Hàng thứ hai chỉ có 2 mục */
+  .category-row:nth-child(2) .category-item {
+    width: 48%;
+    /* Khoảng 1/2 chiều rộng cho 2 mục trên hàng thứ hai */
+  }
+
+  .category-item:active {
+    background-color: #fffbeb;
+    border-color: #ffd166;
+    transform: scale(0.98);
+  }
+
+  .category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #fff9db;
+    border-radius: 50%;
+    margin-bottom: 6px;
+    color: #f59e0b;
+  }
+
+  .category-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* Media queries cho các kích thước màn hình khác nhau */
+  @media (min-width: 480px) {
+    .category-container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .iuhsf {
+      display: block;
+
+      /* Ensure items stack vertically on phones */
+    }
+  }
+
+  /* Hide .iuhsf on larger screens (min-width: 600px) */
+  @media (min-width: 599px) {
+    .iuhsf {
+      display: none;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .category-container {
+      max-width: 600px;
+      padding: 16px;
+    }
+
+    .category-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .category-name {
+      font-size: 13px;
+    }
+  }
 </style>
 
 <body>
@@ -812,6 +912,7 @@
         </li>
       </ul>
     </div>
+
     <div class="col-md-8 list_item">
       <div class="container-lg position-relative">
         <div class="section-header d-flex flex-wrap justify-content-between pb-2">
@@ -828,7 +929,11 @@
               <div class="swiper-slide">
                 <div class="product-item mb-4">
                   <figure>
-                    <a href="?controller=product&action=detail&id=<?php echo $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                    <?php
+                    $slug = !empty($product['slug']) ? urlencode($product['slug']) : '';
+                    ?>
+
+                    <a href="/<?php echo $slug !== '' ? $slug : '?controller=product&action=detail&id=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
                       <img
                         src="../public/img/<?php echo htmlspecialchars($main_image['image_url'] ?? 'placeholder.jpg'); ?>"
                         alt="Product Thumbnail"
@@ -837,7 +942,7 @@
                   </figure>
                   <div class="d-flex flex-column text-center">
                     <h3 class="fs-5 fw-normal">
-                      <a href="?controller=product&action=detail&id=<?php echo $product['ID']; ?>" class="text-decoration-none">
+                      <a href="/<?php echo $slug !== '' ? $slug : '?controller=product&action=detail&id=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
                         <?php echo htmlspecialchars($product['name']); ?>
                       </a>
                     </h3>
@@ -887,100 +992,175 @@
   </section>
 
 
-  <div class="offcanvas-body mess_l1131ist justify-content-center" style="">
+
+  <div class="offcanvas-body mess_l1131ist justify-content-center">
     <ul class="custom-nav mb-0" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 0; list-style: none; width: 100%;">
 
+      <div style="display: flex; justify-content: space-between !important;">
+        <a class="category-item">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+              <path d="M18 14h-8"></path>
+              <path d="M15 18h-5"></path>
+              <path d="M10 6h8v4h-8V6Z"></path>
+            </svg>
 
-      <form id="searchSortOnlycategory4" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px; margin: 0;">
-        <input type="hidden" name="search" value="">
-        <input type="hidden" name="sort" value="">
-        <input type="hidden" name="page" value="1">
-        <div class="col-md-12 custom-select" style="display: flex; justify-content: center; position: relative; width: 100%;">
-          <span class="fixed-text" style="position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; font-weight: 650; font-size: 14px;">
-            GÀ CÔNG GÔ
-          </span>
-          <select name="category_id" id="categoryOnlySelect4" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" style="opacity: 0; width: 100%;">
-            <?php
-            $categoryFmProducts = $this->product->getAllCategory();
-            foreach ($categoryFmProducts as $cat): ?>
-              <option value="<?= htmlspecialchars($cat['ID']) ?>" <?= isset($category_id) && $category_id == $cat['ID'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($cat['name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      </form>
+          </div>
+          <form id="searchSortOnlycategory4" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px;;">
+            <input type="hidden" name="search" value="">
+            <input type="hidden" name="sort" value="">
+            <input type="hidden" name="page" value="1">
+            <div class="col-md-12 custom-select" style="display: flex; justify-content: center; position: relative; width: 100%;">
+              <span class="fixed-text" style="position: absolute;  pointer-events: none; font-weight: 500;color: black; font-size: 14px;">
+                GÀ CÔNG GÔ
+              </span>
+              <select name="category_id" id="categoryOnlySelect4" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" style="opacity: 0; width: 100%;">
+                <?php
+                $categoryFmProducts = $this->product->getAllCategory();
+                foreach ($categoryFmProducts as $cat): ?>
+                  <option value="<?= htmlspecialchars($cat['ID']) ?>" <?= isset($category_id) && $category_id == $cat['ID'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cat['name']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </form>
+        </a>
+        <a class="category-item">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 3.2C7.9 4 6.1 5.8 5.3 8"></path>
+              <path d="M11.2 2c.8.6 1.3 1.4 1.5 2.4"></path>
+              <path d="M19.8 17c-1.1 1.3-2.4 2.4-3.8 3.3"></path>
+              <path d="M22 19c-.7-.6-1.3-1.5-1.5-2.5"></path>
+              <path d="M5.3 11c-1.3.2-2.6.4-3.8.8"></path>
+              <path d="M2 13c.7-.5 1.5-.8 2.4-.8"></path>
+              <path d="M18.7 8c1.3-.2 2.6-.4 3.8-.8"></path>
+              <path d="M22 6c-.7.5-1.5.8-2.4.8"></path>
+              <path d="M10 18a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1"></path>
+              <path d="M12 12V8.5a1.5 1.5 0 0 1 3 0V12"></path>
+            </svg>
+          </div>
+          <form id="searchSortOnlycategory5" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px;">
+            <input type="hidden" name="search" value="">
+            <input type="hidden" name="sort" value="">
+            <input type="hidden" name="page" value="1">
+            <div class="col-md-12 custom-select" style="display: flex; justify-content: center; position: relative; width: 100%;">
+              <span class="fixed-text" style="position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; font-weight: 500;color: black; font-size: 14px;">
+                VỊT NAM PHI
+              </span>
+              <select name="category_id" id="categoryOnlySelect5" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" style="opacity: 0; width: 100%;">
+                <?php
+                $categoryFmProducts = $this->product->getAllCategory();
+                foreach ($categoryFmProducts as $cat): ?>
+                  <option value="<?= htmlspecialchars($cat['ID']) ?>" <?= isset($category_id) && $category_id == $cat['ID'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cat['name']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </form>
+        </a>
 
-      <form id="searchSortOnlycategory5" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px; margin: 0;">
-        <input type="hidden" name="search" value="">
-        <input type="hidden" name="sort" value="">
-        <input type="hidden" name="page" value="1">
-        <div class="col-md-12 custom-select" style="display: flex; justify-content: center; position: relative; width: 100%;">
-          <span class="fixed-text" style="position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; font-weight: 650; font-size: 14px;">
-            VỊT NAM PHI
-          </span>
-          <select name="category_id" id="categoryOnlySelect5" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" style="opacity: 0; width: 100%;">
-            <?php
-            $categoryFmProducts = $this->product->getAllCategory();
-            foreach ($categoryFmProducts as $cat): ?>
-              <option value="<?= htmlspecialchars($cat['ID']) ?>" <?= isset($category_id) && $category_id == $cat['ID'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($cat['name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      </form>
+        <a class="category-item">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"></path>
+              <path d="m18 2 4 4-4 4"></path>
+              <path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"></path>
+              <path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"></path>
+              <path d="m18 14 4 4-4 4"></path>
+            </svg>
+          </div>
+          <form id="searchSortOnlycategory6" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px;">
+            <input type="hidden" name="search" value="">
+            <input type="hidden" name="sort" value="">
+            <input type="hidden" name="page" value="1">
+            <div class="col-md-12 custom-select" style="display: flex; justify-content: center; position: relative; width: 100%;">
+              <span class="fixed-text" style="position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none;font-weight: 500;color: black; font-size: 14px;">
+                GÀ GÔ ĐỎ
+              </span>
+              <select name="category_id" id="categoryOnlySelect6" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" style="opacity: 0; width: 100%;">
+                <?php
+                $categoryFmProducts = $this->product->getAllCategory();
+                foreach ($categoryFmProducts as $cat): ?>
+                  <option value="<?= htmlspecialchars($cat['ID']) ?>" <?= isset($category_id) && $category_id == $cat['ID'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cat['name']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </form>
+        </a>
 
-      <form id="searchSortOnlycategory6" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="flex: 1 1 calc(33.33% - 10px); min-width: 100px; margin: 0;">
-        <input type="hidden" name="search" value="">
-        <input type="hidden" name="sort" value="">
-        <input type="hidden" name="page" value="1">
-        <div class="col-md-12 custom-select" style="display: flex; justify-content: center; position: relative; width: 100%;">
-          <span class="fixed-text" style="position: absolute; top: 50%; transform: translateY(-50%); pointer-events: none; font-weight: 650; font-size: 14px;">
-            GÀ GÔ ĐỎ
-          </span>
-          <select name="category_id" id="categoryOnlySelect6" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" style="opacity: 0; width: 100%;">
-            <?php
-            $categoryFmProducts = $this->product->getAllCategory();
-            foreach ($categoryFmProducts as $cat): ?>
-              <option value="<?= htmlspecialchars($cat['ID']) ?>" <?= isset($category_id) && $category_id == $cat['ID'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($cat['name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      </form>
+
+      </div>
+
+
       <div style="display: flex; justify-content: space-around; width: 100%;">
+        <a class="category-item">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+              <path d="M18 14h-8"></path>
+              <path d="M15 18h-5"></path>
+              <path d="M10 6h8v4h-8V6Z"></path>
+            </svg>
+          </div>
+          <li class="custom-item" style=" min-width: 120px;  text-align: center;">
+            <select id="categorySelect_art1" class="form-select  nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryArt1()" style="width: 100%; color: black;font-weight: 500; ">
+              <option value="" <?php echo !isset($_GET['category_id_art']) ? 'selected' : ''; ?>>TIN TỨC HÀNG NGÀY</option>
+              <?php $categoryArt = $this->article->CatergorygetAllAt();
+              if (!empty($categoryArt) && is_array($categoryArt)): ?>
+                <?php foreach ($categoryArt as $cat): ?>
+                  <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_art']) && $_GET['category_id_art'] == $cat['id']) ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
+                  </option>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </select>
+          </li>
+        </a>
 
-        <li class="custom-item" style=" min-width: 100px; margin: 0; text-align: center;">
-          <select id="categorySelect_art1" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryArt1()" style="width: 100%; ">
-            <option value="" <?php echo !isset($_GET['category_id_art']) ? 'selected' : ''; ?>>TIN TỨC HÀNG NGÀY</option>
-            <?php $categoryArt = $this->article->CatergorygetAllAt();
-            if (!empty($categoryArt) && is_array($categoryArt)): ?>
-              <?php foreach ($categoryArt as $cat): ?>
-                <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_art']) && $_GET['category_id_art'] == $cat['id']) ? 'selected' : ''; ?>>
-                  <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
-                </option>
-              <?php endforeach; ?>
-            <?php endif; ?>
-          </select>
-        </li>
+        <a class="category-item">
+          <div class="category-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"></path>
+              <path d="M12 11h4"></path>
+              <path d="M12 16h4"></path>
+              <path d="M8 11h.01"></path>
+              <path d="M8 16h.01"></path>
+            </svg>
+          </div>
+          <li class="custom-item" style=" min-width: 100px; text-align: center;">
+            <select id="categorySelect_fm1" class="form-select  nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryFm1()" style="width: 100%; color: black;font-weight: 500;">
+              <option value="" <?php echo !isset($_GET['category_id_fm']) ? 'selected' : ''; ?>>QUY TRÌNH CHĂN NUÔI</option>
+              <?php if (!empty($categoryFm) && is_array($categoryFm)): ?>
+                <?php foreach ($categoryFm as $cat): ?>
+                  <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_fm']) && $_GET['category_id_fm'] == $cat['id']) ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
+                  </option>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </select>
+          </li>
+        </a>
 
-        <li class="custom-item" style=" min-width: 100px; margin: 0; text-align: center;">
-          <select id="categorySelect_fm1" class="form-select fw-bold nav-link dropdown-toggle custom-dropdown" onchange="changeCategoryFm1()" style="width: 100%;">
-            <option value="" <?php echo !isset($_GET['category_id_fm']) ? 'selected' : ''; ?>>QUY TRÌNH CHĂN NUÔI</option>
-            <?php if (!empty($categoryFm) && is_array($categoryFm)): ?>
-              <?php foreach ($categoryFm as $cat): ?>
-                <option value="<?php echo htmlspecialchars($cat['id'] ?? ''); ?>" <?php echo (isset($_GET['category_id_fm']) && $_GET['category_id_fm'] == $cat['id']) ? 'selected' : ''; ?>>
-                  <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
-                </option>
-              <?php endforeach; ?>
-            <?php endif; ?>
-          </select>
-        </li>
       </div>
     </ul>
   </div>
+
+
+
+
+
+
+
+
+
+
 
   <div class="col-md-8 mess_list el" style="margin-top: 33px;">
     <div class="container-lg position-relative">
@@ -1003,8 +1183,11 @@
             <div class="swiper-slide">
               <div class="product-item mb-4">
                 <figure>
+                  <?php
+                  $slug = !empty($product['slug']) ? urlencode($product['slug']) : '';
+                  ?>
 
-                  <a href="?controller=product&action=detail&id=<?php echo $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                  <a href="/<?php echo $slug !== '' ? $slug : '?controller=product&action=detail&id=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
 
 
 
@@ -1019,8 +1202,9 @@
                 </figure>
                 <div class="d-flex flex-column text-center">
                   <h3 class="fs-5 fw-normal">
-                    <a href="?controller=product&action=detail&id=<?php echo $product['ID']; ?>" class="text-decoration-none">
+                    <a href="/<?php echo $slug !== '' ? $slug : '?controller=product&action=detail&id=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
                       <?php echo htmlspecialchars($product['name']); ?>
+
                     </a>
                   </h3>
                   <div class="d-flex justify-content-center align-items-center gap-2">
@@ -1111,7 +1295,11 @@
                       <div class="col">
                         <div class="product-item mb-4">
                           <figure>
-                            <a href="?controller=product&action=detail&id=<?php echo $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                            <?php
+                            $slug = !empty($product['slug']) ? urlencode($product['slug']) : '';
+                            ?>
+
+                            <a href="/<?php echo $slug !== '' ? $slug : '?' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
                               <img
                                 src="../public/img/<?php echo htmlspecialchars($main_image['image_url'] ?? 'placeholder.jpg'); ?>"
                                 alt="Product Thumbnail"
@@ -1120,8 +1308,13 @@
                           </figure>
                           <div class="d-flex flex-column text-center">
                             <h3 class="fs-5 fw-normal">
-                              <a href="?controller=product&action=detail&id=<?php echo $product['ID']; ?>" class="text-decoration-none">
+                              <?php
+                              $slug = !empty($product['slug']) ? urlencode($product['slug']) : '';
+                              ?>
+
+                              <a href="/<?php echo $slug !== '' ? $slug : '?' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
                                 <?php echo htmlspecialchars($product['name']); ?>
+                                
                               </a>
                             </h3>
                             <div class="d-flex justify-content-center align-items-center gap-2">
@@ -1485,7 +1678,7 @@
       }
 
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('category_id_art' )) {
+      if (urlParams.has('category_id_art')) {
         // Nếu có category_id_art, gán cờ và ẩn
         document.querySelectorAll('.el').forEach(el => el.style.display = 'none');
         sessionStorage.setItem('hideEl', 'true');
@@ -1606,14 +1799,22 @@
           <div class="col">
             <div class="product-item mb-4">
               <figure>
-                <a href="?controller=product&action=detail&id=${product.ID}" title="${product.name}">
-                  <img src="${imageUrl}" class="tab-image img-fluid rounded-3" />
+               <?php
+                $slug = !empty($product['slug']) ? urlencode($product['slug']) : '';
+                ?>
+
+            <a href="/<?php echo $slug !== '' ? $slug : '?=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                                  <img src="${imageUrl}" class="tab-image img-fluid rounded-3" />
                 </a>
               </figure>
               <div class="d-flex flex-column text-center">
                 <h3 class="fs-5 fw-normal">
-                  <a href="?controller=product&action=detail&id=${product.ID}" class="text-decoration-none">
-                    ${product.name}
+                 <?php
+                  $slug = !empty($product['slug']) ? urlencode($product['slug']) : '';
+                  ?>
+
+             <a href="/<?php echo $slug !== '' ? $slug : '?=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                                    ${product.name}
                   </a>
                 </h3>
                 <div class="d-flex justify-content-center align-items-center gap-2">
@@ -1964,14 +2165,14 @@
           <div class="col">
             <div class="product-item mb-4">
               <figure>
-                <a href="?controller=product&action=detail&id=${product.ID}" title="${product.name}">
-                  <img src="${imageUrl}" class="tab-image img-fluid rounded-3" />
+             <a href="/<?php echo $slug !== '' ? $slug : '?=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                                 <img src="${imageUrl}" class="tab-image img-fluid rounded-3" />
                 </a>
               </figure>
               <div class="d-flex flex-column text-center">
                 <h3 class="fs-5 fw-normal">
-                  <a href="?controller=product&action=detail&id=${product.ID}" class="text-decoration-none">
-                    ${product.name}
+                  <a href="/<?php echo $slug !== '' ? $slug : '?=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                                ${product.name}
                   </a>
                 </h3>
                 <div class="d-flex justify-content-center align-items-center gap-2">
@@ -2375,13 +2576,14 @@
           <div class="col">
             <div class="product-item mb-4">
               <figure>
-                <a href="?controller=product&action=detail&id=${product.ID}" title="${product.name}">
-                  <img src="${imageUrl}" class="tab-image img-fluid rounded-3" />
+              <a href="/<?php echo $slug !== '' ? $slug : '?controller=product&action=detail&id=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                                 <img src="${imageUrl}" class="tab-image img-fluid rounded-3" />
                 </a>
               </figure>
               <div class="d-flex flex-column text-center">
                 <h3 class="fs-5 fw-normal">
-                  <a href="?controller=product&action=detail&id=${product.ID}" class="text-decoration-none">
+                    <a href="/<?php echo $slug !== '' ? $slug : '?controller=product&action=detail&id=' . $product['ID']; ?>" title="<?php echo htmlspecialchars($product['name']); ?>">
+                          
                     ${product.name}
                   </a>
                 </h3>

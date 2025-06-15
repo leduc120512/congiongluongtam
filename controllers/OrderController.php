@@ -351,7 +351,7 @@ class OrderController
         $note = isset($_POST['note']) ? filter_input(INPUT_POST, 'note', FILTER_SANITIZE_SPECIAL_CHARS) : '';
         $action = isset($_POST['action']) ? $_POST['action'] : 'contact'; // Default to contact
         $buy_not = ($action === 'contact') ? 1 : 0; // Liên hệ: buy_not = 1, Mua ngay: buy_not = 0
-        $user = $this->user->getById($_SESSION['user_id']);
+
         // Validate inputs
         if (!$product_id || !$phone) {
             header('Content-Type: application/json');
@@ -374,10 +374,11 @@ class OrderController
         error_log('Tel Phone: ' . $tel_phone); // Debug log
 
         // Create order
-        $user_id = 1; // Default guest user ID (adjust if authenticated)
+        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1; // Nếu đã đăng nhập thì dùng ID người dùng, còn không thì dùng ID khách
+
         $quantity = 1; // Default quantity
         $total_price = 0; // Will be overridden by DB in createOrder
-        $result = $this->order->createOrder($user, $product_id, $quantity, $total_price, $phone, $note, $buy_not);
+        $result = $this->order->createOrder($user_id, $product_id, $quantity, $total_price, $phone, $note, $buy_not);
         header('Content-Type: application/json');
 
         if ($result['success']) {

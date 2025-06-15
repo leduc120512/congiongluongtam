@@ -287,7 +287,7 @@
             <div class="row">
                 <div class="section-header d-flex align-items-center justify-content-between mb-4">
                     <h2 style="margin-top: 10px;" class="section-title text-primary">Tin tức & Bài báo</h2>
-              
+
                 </div>
             </div>
             <div class="row" id="articles-container-art">
@@ -298,10 +298,18 @@
                         <div class="col-lg-3 col-md-6 mb-4">
                             <article class="post-item card border-0 shadow-lg h-100">
                                 <div class="image-holder zoom-effect">
-                                    <a href="?controller=article&action=detail_Art&id=<?= htmlspecialchars($article['id']) ?>" aria-label="Xem chi tiết bài báo">
+                                    <?php
+                                    $slug = !empty($article['slug']) ? urlencode($article['slug']) : '';
+                                    ?>
+
+                                    <a href="/bv/<?php echo $slug !== '' ? $slug : '?controller=article&action=detail_Art&id=' . $article['ID']; ?>" title="<?php echo htmlspecialchars($article['note']); ?>">
+
+                                        <!-- <a href="?controller=article&action=detail_Art&id=<?= htmlspecialchars($article['id']) ?>" aria-label="Xem chi tiết bài báo"> -->
+
                                         <img src="<?= htmlspecialchars($article['image_url'] ?? '/public/img/default.jpg') ?>"
                                             alt="<?= htmlspecialchars($article['title'] ?? 'Hình ảnh bài báo1') ?>"
                                             class="card-img-top" loading="lazy" />
+
                                     </a>
                                 </div>
                                 <div class="card-body">
@@ -313,11 +321,17 @@
                                             <?= htmlspecialchars(mb_strimwidth($article['note'] ?? '', 0, 1, '...')) ?>
                                         </span>
 
+
+
                                     </div>
                                     <div class="post-header">
                                         <h3 class="fs-5 fw-bold">
                                             <a class="text-decoration-none" href="?controller=article&action=detail_Art&id=<?= htmlspecialchars($article['id']) ?>"
                                                 class="post-title"><?= htmlspecialchars($article['title'] ?? '') ?></a>
+                                        </h3>
+                                        <h3 class="fs-5 fw-bold">
+                                            <a class="text-decoration-none" href="?controller=article&action=detail_Art&id=<?= htmlspecialchars($article['id']) ?>"
+                                                class="post-title"><?= htmlspecialchars($article['image_url'] ?? '/public/img/default.jpg') ?></a>
                                         </h3>
 
                                     </div>

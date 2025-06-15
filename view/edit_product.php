@@ -241,15 +241,29 @@
 
                         <div class="collapse" id="collapseExample">
                             <p style="font-size: 15px;font-weight: bold;"> * Hướng dẫn sử dụng copy vào AI nó sẽ hiểu:</p>
-                            <p style="margin-top: 20px;"> * - Dùng $text$ để tạo chữ đậm, màu đen, kích thước 18px (ví dụ: $Phần 1$).</p>
-                            <p> * - Dùng | để tạo bảng (ví dụ: "Tiêu đề 1|Tiêu đề 2\nGiá trị 1|Giá trị 2").</p>
-                            <p>* - Dùng *text* để tạo danh sách gạch đầu dòng (ví dụ: *Mục 1*).</p>
-                            <p> * - Mỗi dòng mới (\n) sẽ tạo một đoạn văn bản riêng, kích thước chữ tự động điều chỉnh:</p>
+                            <p style="margin-top: 20px;"> 📌 Hướng dẫn định dạng nội dung mô tả:
 
-                            <p>* + Dưới 50 ký tự: 16px (text-base).</p>
-                            <p> * + 50-100 ký tự: 14px (text-sm).</p>
-                            <p> * + Trên 100 ký tự: 12px (text-xs).</p>
-                            <p> * - Các ký tự HTML sẽ được mã hóa để tránh lỗi bảo mật.</p>
+                                - Dùng $text$ để tạo tiêu đề đậm (font đen, size 18px)
+                                → Ví dụ: $I. ĐẶC ĐIỂM$ hoặc $II. KỸ THUẬT NUÔI$
+
+                                - Dùng *text* để tạo danh sách gạch đầu dòng (•), có thể xuống dòng
+                                → Ví dụ: *Thịt thơm, ít mỡ, phù hợp chế biến món đặc sản*
+
+                                - Dùng | để tạo bảng (tách cột bằng |, xuống dòng mới là dòng mới)
+                                → Ví dụ:
+                                Tuần tuổi|Cân nặng|Ghi chú
+                                1 tuần|150g|Giai đoạn úm
+                                6 tuần|3.2kg|Chuẩn bị xuất chuồng
+
+                                - Xuống dòng `\n` để phân tách các đoạn văn bản
+
+                                - Ký tự đặc biệt (như `&`, `"`, `<`, `>`) sẽ được AI tự động mã hóa an toàn cho web
+
+                                    - Kích thước chữ tự động co giãn:
+                                    + Dưới 50 ký tự: 16px (`text-base`)
+                                    + 50–100 ký tự: 14px (`text-sm`)
+                                    + Trên 100 ký tự: 12px (`text-xs`)
+                            </p>
 
                         </div>
                     </div>

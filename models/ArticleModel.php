@@ -13,14 +13,14 @@ class ArticleModel
         try {
             if ($category_id_art) {
                 $stmt = $this->conn->prepare("
-                    SELECT id, title, decription, note, image_url, created_at 
+                    SELECT id, title, decription, note, image_url, created_at ,slug
                     FROM articles 
                     WHERE category_id = :category_id_art
                 ");
                 $stmt->bindParam(':category_id_art', $category_id_art, PDO::PARAM_INT);
             } else {
                 $stmt = $this->conn->prepare("
-                    SELECT id, title, decription, note, image_url, created_at 
+                    SELECT id, title, decription, note, image_url, created_at ,slug
                     FROM articles 
                 
                 ");
@@ -37,14 +37,14 @@ class ArticleModel
         try {
             if ($category_id_art) {
                 $stmt = $this->conn->prepare("
-                    SELECT id, title, decription, note, image_url, created_at 
+                    SELECT id, title, decription, note, image_url, created_at ,slug
                     FROM articles 
                     WHERE category_id = :category_id_art
                 ");
                 $stmt->bindParam(':category_id_art', $category_id_art, PDO::PARAM_INT);
             } else {
                 $stmt = $this->conn->prepare("
-                 SELECT id, title, decription, note, image_url, created_at 
+                 SELECT id, title, decription, note, image_url, created_at ,slug
 FROM articles 
 LIMIT 8;
                 ");
@@ -100,16 +100,23 @@ LIMIT 8;
             return false;
         }
     }
+    public function getBySlug($slug)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM articles WHERE slug = ? LIMIT 1");
+        $stmt->execute([$slug]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
-    public function add($title, $content, $author, $decription, $note, $image_url = null, $category_id = 1)
+
+    public function add($title, $slug, $content, $author, $decription, $note, $image_url = null, $category_id = 1)
     {
         try {
             $this->conn->beginTransaction();
             $stmt = $this->conn->prepare("
-                INSERT INTO articles (title, content, author, decription, note, image_url, created_at, category_id)
-                VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)
+                INSERT INTO articles (title, slug, content, author, decription, note, image_url, created_at, category_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
             ");
-            $stmt->execute([$title, $content, $author, $decription, $note, $image_url, $category_id]);
+            $stmt->execute([$title, $slug, $content, $author, $decription, $note, $image_url, $category_id]);
             $this->conn->commit();
             return true;
         } catch (PDOException $e) {
@@ -118,6 +125,13 @@ LIMIT 8;
             return ['success' => false, 'message' => 'Lỗi cơ sở dữ liệu: ' . $e->getMessage()];
         }
     }
+    public function slugExists($slug)
+    {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM articles WHERE slug = ?");
+        $stmt->execute([$slug]);
+        return $stmt->fetchColumn() > 0;
+    }
+
     public function update($id, $title, $content, $author, $decription, $note, $image_url = null)
     {
         try {

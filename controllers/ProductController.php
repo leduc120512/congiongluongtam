@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
-require_once  __DIR__ .'/../models/Product.php';
+require_once  __DIR__ . '/../models/Product.php';
 require_once  __DIR__ . '/../models/ProductReview.php';
 require_once  __DIR__ . '/../models/ProductComment.php';
 require_once  __DIR__ . '/../models/CommentReply.php';
@@ -108,13 +108,7 @@ class ProductController
         $products = $allProducts;
         require __DIR__ . '/../view/detailArt.php';
     }
-    private function createSlug($string)
-{
-    $slug = strtolower(trim($string));
-    $slug = preg_replace('/[^a-z0-9\s-]/u', '', $slug);
-    $slug = preg_replace('/[\s-]+/', '-', $slug);
-    return $slug;
-}
+
 
     public function indexART1()
     {
@@ -357,81 +351,168 @@ class ProductController
         // Load the view
         require __DIR__ . '/../view/admin_manager.php';
     }
+    // public function add()
+    // {
+    //     header('Content-Type: application/json');
+
+    //     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    //         echo json_encode(['success' => false, 'message' => 'Bạn không có quyền truy cập.']);
+    //         exit;
+    //     }
+
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
+    //         $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
+    //         $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
+    //         $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
+    //         $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_SPECIAL_CHARS);
+    //         $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
+    //         $top = isset($_POST['top']) && $_POST['top'] == '1';
+
+    //         if (!$name || $price === false || $quantity === false || !$category_id) {
+    //             echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ và đúng các trường bắt buộc.']);
+    //             exit;
+    //         }
+
+    //         // Xử lý upload ảnh
+    //         $upload_dir = realpath(__DIR__ . '/../public/img') . '/';
+    //         $image_urls = [];
+
+    //         if (isset($_FILES['img']) && is_array($_FILES['img']['name'])) {
+    //             $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    //             $file_count = count($_FILES['img']['name']);
+
+    //             for ($i = 0; $i < $file_count; $i++) {
+    //                 if ($_FILES['img']['error'][$i] === UPLOAD_ERR_OK) {
+    //                     $original_name = $_FILES['img']['name'][$i];
+    //                     $tmp_name = $_FILES['img']['tmp_name'][$i];
+    //                     $ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
+
+    //                     if (!in_array($ext, $allowed_exts)) {
+    //                         echo json_encode(['success' => false, 'message' => "Định dạng ảnh $original_name không hợp lệ."]);
+    //                         exit;
+    //                     }
+
+    //                     $new_filename = uniqid('img_') . '.' . $ext;
+    //                     $target_path = $upload_dir . $new_filename;
+
+    //                     if (move_uploaded_file($tmp_name, $target_path)) {
+    //                         $image_urls[] = $new_filename;
+    //                     } else {
+    //                         error_log("❌ Upload thất bại: $original_name");
+    //                         echo json_encode(['success' => false, 'message' => "Tải ảnh $original_name lên thất bại."]);
+    //                         exit;
+    //                     }
+    //                 } else {
+    //                     error_log("❌ Upload lỗi mã: " . $_FILES['img']['error'][$i]);
+    //                     echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi tải ảnh lên.']);
+    //                     exit;
+    //                 }
+    //             }
+    //         }
+
+    //         // Gọi model thêm sản phẩm (bạn thay thế bằng logic của bạn)
+    //         $success = $this->product->add($name, $price, $quantity, $description, $category_id, $top, $image_urls);
+
+    //         if ($success) {
+    //             echo json_encode(['success' => true, 'message' => 'Thêm sản phẩm thành công.']);
+    //         } else {
+    //             echo json_encode(['success' => false, 'message' => 'Lỗi khi lưu vào cơ sở dữ liệu.']);
+    //         }
+    //         exit;
+    //     }
+
+    //     // Nếu không phải POST hợp lệ thì load giao diện thêm sản phẩm
+    //     require __DIR__ . '/../view/admin_manager.php';
+    // }
     public function add()
     {
         header('Content-Type: application/json');
+
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             echo json_encode(['success' => false, 'message' => 'Bạn không có quyền truy cập.']);
             exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
-            error_log('$_FILES: ' . print_r($_FILES, true));
+            require_once __DIR__ . '/../models/slug_generator.php';
 
             $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
             $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
             $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
             $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_SPECIAL_CHARS);
-            $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT, ['options' => ['default' => null]]);
-            $top = isset($_POST['top']) && $_POST['top'] == '1' ? true : false;
+            $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
+            $top = isset($_POST['top']) && $_POST['top'] == '1';
 
-            if (!$name || $price === false || $quantity === false) {
+            if (!$name || $price === false || $quantity === false || !$category_id) {
                 echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ và đúng các trường bắt buộc.']);
                 exit;
             }
 
-            $image_urls = [];
-            $upload_dir = "../public/img/";
-            if (!is_writable($upload_dir)) {
-                echo json_encode(['success' => false, 'message' => 'Thư mục img không có quyền ghi.']);
+            $baseSlug = generateSlug($name);
+            $slug = $baseSlug;
+            $counter = 1;
+            while ($this->product->slugExists($slug)) {
+                $slug = $baseSlug . '-' . $counter++;
+            }
+
+            $upload_dir = realpath(__DIR__ . '/../public/img');
+            error_log("🛠️ Đường dẫn upload: " . var_export($upload_dir, true));
+
+            if (!$upload_dir || !is_writable($upload_dir)) {
+                $error = "❌ Thư mục không tồn tại hoặc không có quyền ghi: $upload_dir";
+                error_log($error);
+                echo json_encode(['success' => false, 'message' => $error]);
                 exit;
             }
 
-            if (isset($_FILES['img']) && is_array($_FILES['img']['name'])) {
-                $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
-                $file_count = count($_FILES['img']['name']);
-                error_log("Number of files uploaded: $file_count");
+            $upload_dir .= '/';
+            $image_urls = [];
 
-                for ($i = 0; $i < $file_count; $i++) {
-                    if ($_FILES['img']['error'][$i] === UPLOAD_ERR_OK) {
-                        $img_name = $_FILES['img']['name'][$i];
-                        $img_tmp = $_FILES['img']['tmp_name'][$i];
+            if (isset($_FILES['img']) && is_array($_FILES['img']['name'])) {
+                $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+                foreach ($_FILES['img']['name'] as $key => $img_name) {
+                    if ($_FILES['img']['error'][$key] === UPLOAD_ERR_OK) {
+                        $img_tmp = $_FILES['img']['tmp_name'][$key];
                         $img_ext = strtolower(pathinfo($img_name, PATHINFO_EXTENSION));
-                        error_log("Processing file $i: $img_name, Extension: $img_ext");
 
                         if (!in_array($img_ext, $allowed_exts)) {
-                            echo json_encode(['success' => false, 'message' => "Định dạng ảnh $img_name không hợp lệ. Chỉ chấp nhận JPG, PNG, hoặc GIF."]);
+                            echo json_encode(['success' => false, 'message' => "Định dạng ảnh không hợp lệ: $img_name"]);
                             exit;
                         }
 
-                        $img_new_name = uniqid() . '.' . $img_ext;
-                        $target = $upload_dir . $img_new_name;
+                        $img_new_name = uniqid('img_') . '.' . $img_ext;
+                        $target = $upload_dir . '/' . $img_new_name;
+
                         if (move_uploaded_file($img_tmp, $target)) {
                             $image_urls[] = $img_new_name;
-                            error_log("Uploaded file $i: $img_new_name");
+                            error_log("📸 Đã upload ảnh thành công: $img_new_name");
                         } else {
-                            error_log("Failed to upload file $i: $img_name");
+                            error_log("❌ Upload thất bại: $img_name");
                             echo json_encode(['success' => false, 'message' => "Tải ảnh $img_name lên thất bại."]);
                             exit;
                         }
                     } else {
-                        error_log("File $i error code: " . $_FILES['img']['error'][$i]);
+                        error_log("❌ Lỗi khi tải ảnh: " . $_FILES['img']['error'][$key]);
                     }
                 }
             }
 
-            error_log('Image URLs to insert: ' . print_r($image_urls, true));
-            if ($this->product->add($name, $price, $quantity, $description, $category_id, $top, $image_urls)) {
-                echo json_encode(['success' => true, 'message' => 'Thêm sản phẩm thành công.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Thêm sản phẩm thất bại.']);
+
+            // ✅ Sau khi upload ảnh xong, gọi model để ghi vào DB
+            $result = $this->product->add($name, $price, $quantity, $description, $category_id, $top, $slug, $image_urls);
+
+            if (is_array($result) && !$result['success']) {
+                echo json_encode($result);
+                exit;
             }
+
+            echo json_encode(['success' => true, 'message' => 'Thêm sản phẩm thành công.']);
             exit;
         }
 
         require __DIR__ . '/../view/admin_manager.php';
     }
-    
     public function edit($id)
     {
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -443,117 +524,100 @@ class ProductController
             exit;
         }
 
-        // Validate product ID
         $product_id = filter_var($id, FILTER_VALIDATE_INT);
         if (!$product_id) {
-            if ($this->isAjaxRequest()) {
-                echo json_encode(['success' => false, 'message' => 'ID sản phẩm không hợp lệ.']);
-                exit;
-            }
-            $_SESSION['error'] = "ID sản phẩm không hợp lệ.";
-            header("Location: ?controller=product&action=manage");
-            exit;
+            return $this->redirectOrJson('?controller=product&action=manage', 'ID sản phẩm không hợp lệ.');
         }
 
-        // Fetch product data
         $product = $this->product->getById($product_id);
         if (!$product) {
-            if ($this->isAjaxRequest()) {
-                echo json_encode(['success' => false, 'message' => 'Sản phẩm không tồn tại.']);
-                exit;
-            }
-            $_SESSION['error'] = "Sản phẩm không tồn tại.";
-            header("Location: ?controller=product&action=manage");
-            exit;
+            return $this->redirectOrJson('?controller=product&action=manage', 'Sản phẩm không tồn tại.');
         }
 
-        if (isset($_POST['edit_product'])) {
-            // Sanitize and validate inputs
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_product'])) {
             $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS);
             $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
             $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
             $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_SPECIAL_CHARS);
             $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
             $is_locked = isset($_POST['is_locked']) ? 1 : 0;
-            $top = isset($_POST['top']) && $_POST['top'] == '1' ? true : false;
+            $top = isset($_POST['top']) && $_POST['top'] == '1';
 
-            // Validate required fields
             if (!$name || $price === false || $quantity === false || !$category_id) {
-                if ($this->isAjaxRequest()) {
-                    echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ và đúng các trường bắt buộc.']);
-                    exit;
-                }
-                $_SESSION['error'] = "Vui lòng điền đầy đủ và đúng các trường bắt buộc.";
-                header("Location: ?controller=product&action=edit&id=$product_id");
-                exit;
+                return $this->redirectOrJson("?controller=product&action=edit&id=$product_id", 'Vui lòng điền đầy đủ và đúng các trường bắt buộc.');
             }
 
-            // Handle image deletion
-            $delete_images = isset($_POST['delete_images']) ? (array) $_POST['delete_images'] : [];
+            // Xử lý slug (nếu đổi tên hoặc slug chưa tồn tại)
+            $slug = $product['slug'];
+            if ($name !== $product['name'] || !$slug) {
+                require_once __DIR__ . '/../models/slug_generator.php';
+                $baseSlug = generateSlug($name);
+                $slug = $baseSlug;
+                $counter = 1;
+                while ($this->product->slugExistsExcept($slug, $product_id)) {
+                    $slug = $baseSlug . '-' . $counter++;
+                }
+            }
+
+            // Xóa ảnh được chọn
+            $delete_images = isset($_POST['delete_images']) ? array_map('intval', (array)$_POST['delete_images']) : [];
             if (!empty($delete_images)) {
-                $delete_images = array_map('intval', $delete_images); // Sanitize IDs
                 $this->product->deleteImages($product_id, $delete_images);
             }
 
-            // Handle new image uploads
+            // Upload ảnh mới
+            $upload_dir = realpath(__DIR__ . '/../public/img');
             $image_urls = [];
-            if (!empty($_FILES['img']['name'][0])) {
-                $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+
+            if ($upload_dir && is_writable($upload_dir) && isset($_FILES['img']) && is_array($_FILES['img']['name'])) {
+                $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
                 foreach ($_FILES['img']['name'] as $key => $img_name) {
                     if ($_FILES['img']['error'][$key] === UPLOAD_ERR_OK) {
                         $img_tmp = $_FILES['img']['tmp_name'][$key];
                         $img_ext = strtolower(pathinfo($img_name, PATHINFO_EXTENSION));
 
                         if (!in_array($img_ext, $allowed_exts)) {
-                            if ($this->isAjaxRequest()) {
-                                echo json_encode(['success' => false, 'message' => 'Định dạng ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, hoặc GIF.']);
-                                exit;
-                            }
-                            $_SESSION['error'] = "Định dạng ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, hoặc GIF.";
-                            header("Location: ?controller=product&action=edit&id=$product_id");
-                            exit;
+                            return $this->redirectOrJson("?controller=product&action=edit&id=$product_id", "Định dạng ảnh không hợp lệ: $img_name");
                         }
 
-                        $img_new_name = uniqid() . '.' . $img_ext;
-                        $target = "../public/img/" . $img_new_name;
+                        $img_new_name = uniqid('img_') . '.' . $img_ext;
+                        $target = $upload_dir . '/' . $img_new_name;
 
                         if (move_uploaded_file($img_tmp, $target)) {
                             $image_urls[] = $img_new_name;
                         } else {
-                            if ($this->isAjaxRequest()) {
-                                echo json_encode(['success' => false, 'message' => 'Tải ảnh lên thất bại.']);
-                                exit;
-                            }
-                            $_SESSION['error'] = "Tải ảnh lên thất bại.";
-                            header("Location: ?controller=product&action=edit&id=$product_id");
-                            exit;
+                            return $this->redirectOrJson("?controller=product&action=edit&id=$product_id", "Tải ảnh $img_name lên thất bại.");
                         }
                     }
                 }
             }
 
-            // Call model’s edit method
-            if ($this->product->edit($product_id, $name, $price, $quantity, $description, $category_id, $is_locked, $top, $image_urls)) {
-                if ($this->isAjaxRequest()) {
-                    echo json_encode(['success' => true, 'message' => 'Cập nhật sản phẩm thành công.']);
-                    exit;
-                }
-                $_SESSION['success'] = "Cập nhật sản phẩm thành công.";
-                header("Location: ?controller=product&action=manage");
-            } else {
-                if ($this->isAjaxRequest()) {
-                    echo json_encode(['success' => false, 'message' => 'Cập nhật sản phẩm thất bại.']);
-                    exit;
-                }
-                $_SESSION['error'] = "Cập nhật sản phẩm thất bại.";
-                header("Location: ?controller=product&action=edit&id=$product_id");
+            // Gọi model để cập nhật
+            $result = $this->product->edit($product_id, $name, $price, $quantity, $description, $category_id, $is_locked, $top, $slug, $image_urls);
+
+            if (is_array($result) && !$result['success']) {
+                error_log("❌ Cập nhật sản phẩm lỗi: " . json_encode($result));
+                return $this->redirectOrJson("?controller=product&action=edit&id=$product_id", $result['message']);
             }
+
+            return $this->redirectOrJson('?controller=product&action=manage', 'Cập nhật sản phẩm thành công.', true);
+        }
+
+        require __DIR__ . '/../view/edit_product.php';
+    }
+
+    private function redirectOrJson($redirectUrl, $message, $success = false)
+    {
+        if ($this->isAjaxRequest()) {
+            echo json_encode(['success' => $success, 'message' => $message]);
             exit;
         }
 
-        // Load the edit product view
-        require __DIR__ . '/../view/edit_product.php';
+        $_SESSION[$success ? 'success' : 'error'] = $message;
+        header("Location: $redirectUrl");
+        exit;
     }
+
 
     // Helper method to detect AJAX request
     private function isAjaxRequest()
@@ -657,76 +721,61 @@ class ProductController
             exit;
         }
     }
-    public function detail()
+
+    public function detail($id)
     {
-        // 1. Lấy slug từ URL
-        $slug = $_GET['slug'] ?? null;
 
-        if (!$slug) {
-            $_SESSION['error'] = "Đường dẫn không hợp lệ.";
-            header("Location: /");
+        $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+        if ($id === false || $id === null) {
+            $_SESSION['error'] = "ID sản phẩm không hợp lệ.";
+            header("Location: ?controller=product&action=index&redirected=1");
             exit;
         }
-
-        // 2. Lấy sản phẩm từ slug
-        $product = $this->product->getBySlug($slug);
-
-        if (!$product || empty($product['ID'])) {
+        $product = $this->product->getById($id);
+        if (!$product) {
             $_SESSION['error'] = "Sản phẩm không tồn tại.";
-            header("Location: /");
+            header("Location: ?controller=product&action=index&redirected=1");
             exit;
         }
 
-        $productId = $product['ID'];
+        // Lấy đánh giá và bình luận
+        $reviews = $this->productReview->getByProductId($id);
+        $comments = $this->productComment->getByProductId($id);
+        $averageRating = $this->productReview->getAverageRating($id);
 
-        // 3. Lấy đánh giá sản phẩm
-        $reviews = $this->productReview->getByProductId($productId);
-        $averageRating = $this->productReview->getAverageRating($productId);
+        // Lấy trả lời cho từng bình luận
+        foreach ($comments as &$comment) {
+            $comment['replies'] = $this->commentReply->getByCommentId($comment['ID']);
+        }
+        $categoryFmProductsone = $this->FarmingProcess->getAllMain();
+        $categoryartProductsone = $this->article->getAllMain();
 
-        // 4. Lấy bình luận và trả lời bình luận
-        $comments = $this->productComment->getByProductId($productId);
+        require_once __DIR__ . '/../view/detail.php';
+    }
+    public function detailBySlug($slug)
+    {
+        $product = $this->product->getBySlug($slug);
+        if (!$product) {
+            $_SESSION['error'] = "Sản phẩm không tồn tại.";
+            header("Location: ?controller=product&action=index");
+            exit;
+        }
+
+        $id = $product['ID'];
+        $reviews = $this->productReview->getByProductId($id);
+        $comments = $this->productComment->getByProductId($id);
+        $averageRating = $this->productReview->getAverageRating($id);
+
         foreach ($comments as &$comment) {
             $comment['replies'] = $this->commentReply->getByCommentId($comment['ID']);
         }
 
-        // 5. Lấy danh mục khác nếu cần
         $categoryFmProductsone = $this->FarmingProcess->getAllMain();
         $categoryartProductsone = $this->article->getAllMain();
 
-        // 6. Gọi giao diện
         require_once __DIR__ . '/../view/detail.php';
     }
 
-    // public function detail($id)
-    // {
-
-    //     $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-    //     if ($id === false || $id === null) {
-    //         $_SESSION['error'] = "ID sản phẩm không hợp lệ.";
-    //         header("Location: ?controller=product&action=index&redirected=1");
-    //         exit;
-    //     }
-    //     $product = $this->product->getById($id);
-    //     if (!$product) {
-    //         $_SESSION['error'] = "Sản phẩm không tồn tại.";
-    //         header("Location: ?controller=product&action=index&redirected=1");
-    //         exit;
-    //     }
-
-    //     // Lấy đánh giá và bình luận
-    //     $reviews = $this->productReview->getByProductId($id);
-    //     $comments = $this->productComment->getByProductId($id);
-    //     $averageRating = $this->productReview->getAverageRating($id);
-
-    //     // Lấy trả lời cho từng bình luận
-    //     foreach ($comments as &$comment) {
-    //         $comment['replies'] = $this->commentReply->getByCommentId($comment['ID']);
-    //     }
-    //     $categoryFmProductsone = $this->FarmingProcess->getAllMain();
-    //     $categoryartProductsone = $this->article->getAllMain();
-
-    //     require_once __DIR__ . '/../view/detail.php';
-    // }
     public function addReview()
     {
         if (!isset($_SESSION['user_id'])) {

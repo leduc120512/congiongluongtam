@@ -1,4 +1,4 @@
-<!-- <?php
+<?php
 // File: support.php
 ?>
 <!DOCTYPE html>
@@ -167,4 +167,4 @@
     </div>
 </body>
 
-</html> -->
+</html>

@@ -13,14 +13,43 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
+
+// Debug: In ra các tham số nhận được
+// var_dump($_GET); // Xóa dòng này sau khi debug xong
+// ✅ Phân tích slug từ đường dẫn URL
+$requestUri = $_SERVER['REQUEST_URI'];
+
+$requestUri = strtok($requestUri, '?'); // Bỏ phần query string sau ?
+if (preg_match('~^/fm/([a-zA-Z0-9\-]+)$~', $requestUri, $matches)) {
+    $slug = $matches[1];
+    $ctrl = new FarmingProcessController();
+    $ctrl->detailBySlug($slug);
+    exit;
+}
+
+
+if ($requestUri !== '/' && preg_match('~^/([a-zA-Z0-9\-]+)$~', $requestUri, $matches)) {
+    $slug = $matches[1];
+
+    // Gọi controller xử lý bằng slug
+    require_once __DIR__ . '/controllers/ProductController.php';
+    $ctrl = new ProductController();
+    $ctrl->detailBySlug($slug);
+    exit;
+}
+if (preg_match('~^/bv/([a-zA-Z0-9\-]+)$~', $requestUri, $matches)) {
+    $slug = $matches[1];
+    $ctrl = new ArticleController();
+    $ctrl->detailBySlug($slug);
+    exit;
+}
+
+
 $controller = $_GET['controller'] ?? 'product';
 $action = $_GET['action'] ?? 'index';
 $id = $_GET['id'] ?? null;
 $order_id = $_GET['order_id'] ?? null;
-
-// Debug: In ra các tham số nhận được
-// var_dump($_GET); // Xóa dòng này sau khi debug xong
-
 switch ($controller) {
     case 'auth':
         $ctrl = new AuthController();
@@ -81,7 +110,7 @@ switch ($controller) {
 
         elseif ($action === 'remove_image') $ctrl->remove_image(); // Added support for remove_image action
         elseif ($action === 'detail' && $id) $ctrl->detail($id);
-     
+
         elseif ($action === 'addComment') $ctrl->addComment(); // Thêm dòng này
         elseif ($action === 'addReply') $ctrl->addReply();
         elseif ($action === 'manage') $ctrl->manage();
@@ -113,7 +142,7 @@ switch ($controller) {
         elseif ($action === 'myOrders') $ctrl->myOrders();
 
         elseif ($action === 'viewCart') $ctrl->viewCart();
-       
+
         elseif ($action === 'removeFromCart' && $id) $ctrl->removeFromCart($id);
 
         break;

@@ -271,7 +271,7 @@
                                     <tr>
                                         <th>Mã đơn hàng</th>
                                         <th>Sản phẩm</th>
-                                        <th>Hình ảnh</th>
+                            
                                         <th>Số lượng</th>
                                         <th>Tổng tiền</th>
                                         <th>Trạng thái</th>
@@ -284,11 +284,7 @@
                                         <tr>
                                             <td><?php echo htmlspecialchars($order['order_id']); ?></td>
                                             <td><?php echo htmlspecialchars($order['product_name']); ?></td>
-                                            <td>
-                                                <img src="../public/img/<?php echo htmlspecialchars($order['product_image']); ?>"
-                                                    class="product-image"
-                                                    alt="<?php echo htmlspecialchars($order['product_name']); ?>">
-                                            </td>
+                                          
                                             <td><?php echo htmlspecialchars($order['quantity']); ?></td>
                                             <td><?php echo number_format($order['total_price'], 0, ',', '.') . ' VNĐ'; ?></td>
                                             <td><?php echo htmlspecialchars($order['status'] ?? 'Đang xử lý'); ?></td>

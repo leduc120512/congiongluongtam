@@ -146,11 +146,8 @@ require_once __DIR__ . '/../Format/description_formatter.php';
                     | <span><i class="fas fa-edit"></i> Cập nhật: <?php echo date('d/m/Y H:i', strtotime($article['updated_at'])); ?></span>
                 <?php endif; ?>
             </div>
-
-            <?php if (!empty($article['image_url'])): ?>
-                <img src="<?php echo htmlspecialchars($article['image_url']); ?>" alt="<?php echo htmlspecialchars($article['title']); ?>" class="article-image">
-            <?php else: ?>
-                <img src="placeholder.jpg" alt="No Image" class="article-image">
+            <?php if ($article['image_url']): ?>
+                <img src="../<?php echo htmlspecialchars($article['image_url']); ?>" alt="Article Image" width="100">
             <?php endif; ?>
 
             <?php if (!empty($article['decription'])): ?>

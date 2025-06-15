@@ -884,7 +884,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                     action="index.php"
                     method="get"
                     class="d-flex mt-3 gap-0">
-                    <form id="searchSortForm" class="search-sort-form row g-3 align-items-center" method="GET" action="">
+                    <form id="searchSortForm" class="search-sort-form row g-3 align-items-center" method="GET" action="/">
                         <!-- PHẦN 1: Từ khóa ở vị trí đầu (ví dụ bên trái) -->
                         <div class="col-md-12">
                             <div class="search-container position-relative">
@@ -911,7 +911,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
             <div class="row py-4 d-none d-lg-flex align-items-center">
                 <!-- Left: Logo + Icons -->
                 <div class="col-lg-2 d-flex align-items-center gap-3">
-                    <a href="?controller=product&action=index" onclick="sessionStorage.removeItem('hideEl')">
+                    <a href="/" onclick="sessionStorage.removeItem('hideEl')">
                         <img src="../view/images/logomain.jpg" alt="logo" class="img-fluid logo-img" />
                     </a>
                     <a href="https://zalo.me/0983525093" target="_blank" class="btn-zalo">
@@ -921,7 +921,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
 
                 <!-- Center: Search -->
                 <div class="col-lg-8 le123">
-                    <form id="searchSortFormDesktop" class="search-sort-form" method="GET" action="">
+                    <form id="searchSortFormDesktop" class="search-sort-form" method="GET" action="/">
                         <div class="position-relative" style="width: 100% !important;">
                             <input type="text"
                                 name="search"
@@ -966,7 +966,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                 <div class="col-lg-2 d-flex justify-content-end align-items-center">
                     <ul class="d-flex align-items-center list-unstyled m-0 gap-2">
                         <li>
-                            <a href="?controller=order&action=myOrders" class="p-2">
+                            <a href="/?controller=order&action=myOrders" class="p-2">
                                 <svg width="24" height="24">
                                     <use xlink:href="#shopping-bag"></use>
                                 </svg>
@@ -1017,7 +1017,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                             aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
                         </button>
-                        <a href="?controller=product&action=index" onclick="sessionStorage.removeItem('hideEl')">
+                        <a href="/" onclick="sessionStorage.removeItem('hideEl')">
                             <img src="../view/images/logomain.jpg" alt="logo" class="img-fluid logo-img" />
                         </a>
                         <a href="https://zalo.me/0983525093" target="_blank" class="btn-zalo">
@@ -1028,7 +1028,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                     <div class="col-sm-6 col-md-3 col-lg-2 d-flex justify-content-end gap-5 align-items-center mt-sm-0  justify-content-sm-end">
                         <ul class="d-flex justify-content-end align-items-center list-unstyled m-0">
                             <li>
-                                <a href="?controller=order&action=myOrders" class="p-2 mx-1">
+                                <a href="/?controller=order&action=myOrders" class="p-2 mx-1">
                                     <svg width="24" height="24">
                                         <use xlink:href="#shopping-bag"></use>
                                     </svg>
@@ -1044,8 +1044,8 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                                         </svg>
                                     </a>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="?controller=auth&action=edit_account">Sửa tài khoản</a></li>
-                                        <li><a class="dropdown-item" href="?controller=auth&action=logout">Đăng xuất</a></li>
+                                        <li><a class="dropdown-item" href="/?controller=auth&action=edit_account">Sửa tài khoản</a></li>
+                                        <li><a class="dropdown-item" href="/?controller=auth&action=logout">Đăng xuất</a></li>
                                     </ul>
                                 </li>
                             <?php else: ?>
@@ -1057,8 +1057,8 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                                         </svg>
                                     </a>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="?controller=auth&action=login">Đăng nhập</a></li>
-                                        <li><a class="dropdown-item" href="?controller=auth&action=register">Đăng ký</a></li>
+                                        <li><a class="dropdown-item" href="/?controller=auth&action=login">Đăng nhập</a></li>
+                                        <li><a class="dropdown-item" href="/?controller=auth&action=register">Đăng ký</a></li>
                                     </ul>
                                 </li>
                             <?php endif; ?>
@@ -1069,7 +1069,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                 <!-- Mobile Search Bar -->
                 <div class="col-sm-10 col-md-4 mx-auto" style="padding: 0 !important; max-width: 100% !important;">
                     <div class="col-12 mx-auto" style="padding: 0 !important; margin-top: 10px;">
-                        <form id="searchSortFormMobile" class="search-sort-form" method="GET" action=""
+                        <form id="searchSortFormMobile" class="search-sort-form" method="GET" action="/"
                             style="margin: 0 !important; width: 100% !important;">
                             <div class="position-relative leduc">
                                 <input type="text"
@@ -1133,11 +1133,11 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                     <ul class="navbar-nav mb-0">
 
                         <li class="nav-item border-end-0 border-lg-end-0 border-lg-end">
-                            <a href="?controller=product&action=index" class="nav-link fw-bold "> Trang chủ</a>
+                            <a href="/" class="nav-link fw-bold "> Trang chủ</a>
                         </li>
 
 
-                        <form id="searchSortOnlycategory1" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="display: flex; justify-content: center;">
+                        <form id="searchSortOnlycategory1" class="search-sort-form row g-3 align-items-center" method="GET" action="/" style="display: flex; justify-content: center;">
                             <!-- Ẩn các trường khác nếu có -->
                             <input type="hidden" name="search" value="">
                             <input type="hidden" name="sort" value="">
@@ -1164,7 +1164,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                             </div>
                         </form>
 
-                        <form id="searchSortOnlycategory" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="display: flex; justify-content: center;">
+                        <form id="searchSortOnlycategory" class="search-sort-form row g-3 align-items-center" method="GET" action="/" style="display: flex; justify-content: center;">
                             <!-- Ẩn các trường khác nếu có -->
                             <input type="hidden" name="search" value="">
                             <input type="hidden" name="sort" value="">
@@ -1190,7 +1190,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                             </div>
 
                         </form>
-                        <form id="searchSortOnlycategory2" class="search-sort-form row g-3 align-items-center" method="GET" action="" style="display: flex; justify-content: center;">
+                        <form id="searchSortOnlycategory2" class="search-sort-form row g-3 align-items-center" method="GET" action="/" style="display: flex; justify-content: center;">
                             <!-- Ẩn các trường khác nếu có -->
                             <input type="hidden" name="search" value="">
                             <input type="hidden" name="sort" value="">
@@ -1467,7 +1467,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                     Swal.showLoading();
                 }
             });
-            let url = '?controller=product&action=index';
+            let url = '/?controller=product&action=index';
             if (categoryId) {
                 url += '&category_id_art=' + encodeURIComponent(categoryId);
             }
@@ -1494,7 +1494,7 @@ $currentPage = isset($_GET['page']) ? $_GET['page'] : 1;
                     Swal.showLoading();
                 }
             });
-            let url = '?controller=product&action=index';
+            let url = '/?controller=product&action=index';
             if (categoryId) {
                 url += '&category_id_fm=' + encodeURIComponent(categoryId);
                 document.querySelectorAll('.el').forEach(element => {

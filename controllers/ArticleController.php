@@ -8,7 +8,7 @@ require_once __DIR__ . '/../models/FarmingProcessModel.php';
 class ArticleController
 {
     private $article;
- 
+
     private $FarmingProcess;
     private $product;
 
@@ -18,8 +18,6 @@ class ArticleController
         $this->article = new ArticleModel($db->getConnection());
         $this->product = new Product($db->getConnection());
         $this->FarmingProcess = new FarmingProcessModel($db->getConnection());
-  
-
     }
 
     // public function add()
@@ -167,6 +165,8 @@ class ArticleController
     public function add()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once __DIR__ . '/../models/slug_generator.php';
+
             $title = $_POST['title'] ?? '';
             $content = $_POST['content'] ?? '';
             $author = $_POST['author'] ?? '';
@@ -175,7 +175,15 @@ class ArticleController
             $category_id = $_POST['category_id'] ?? 1;
             $image_url = null;
 
-            // Handle file upload
+            // Tạo slug không trùng
+            $baseSlug = generateSlug($title);
+            $slug = $baseSlug;
+            $counter = 1;
+            while ($this->article->slugExists($slug)) {
+                $slug = $baseSlug . '-' . $counter++;
+            }
+
+            // Upload ảnh
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $upload_dir = "../public/img/";
                 $image_name = uniqid() . '_' . basename($_FILES['image']['name']);
@@ -183,7 +191,8 @@ class ArticleController
                 move_uploaded_file($_FILES['image']['tmp_name'], $image_url);
             }
 
-            $result = $this->article->add($title, $content, $author, $description, $note, $image_url, $category_id);
+            // Gọi model
+            $result = $this->article->add($title, $slug, $content, $author, $description, $note, $image_url, $category_id);
 
             if ($result === true) {
                 header("Location: ?controller=article&action=manage&success=added");
@@ -197,6 +206,16 @@ class ArticleController
             require __DIR__ . '/../view/admin_article_add.php';
         }
     }
+    public function detailBySlug($slug)
+    {
+        $article = $this->article->getBySlug($slug);
+        if (!$article) {
+            echo "Không tìm thấy bài viết.";
+            exit;
+        }
+        require_once __DIR__ . '/../view/detailArt.php';
+    }
+
 
     public function edit($id)
     {
@@ -283,7 +302,7 @@ class ArticleController
     {
         if ($_SESSION['role'] !== 'admin') return;
         $this->article->delete($id);
-        header("Location: ?controller=product&action=manage");
+        header("Location: ?controller=article&action=manage");
     }
     public function index()
     {
@@ -308,7 +327,7 @@ class ArticleController
         $categoryFmProducts = $this->product->getAllCategory();
         require_once __DIR__ . '/../view/detailArt.php';
     }
-//category
+    //category
 
 
     public function index_category()
@@ -332,7 +351,7 @@ class ArticleController
             $description = $_POST['description'];
             $top = isset($_POST['top']) ? 1 : 0;
             if ($this->article->create($name, $description, $top)) {
-                header("Location: ?controller=categories_art&action=index");
+                header("Location: ?controller=category_art&action=index");
                 exit;
             } else {
                 echo "Lỗi khi tạo danh mục.";
@@ -354,7 +373,7 @@ class ArticleController
             $description = $_POST['description'];
             $top = isset($_POST['top']) ? 1 : 0;
             if ($this->article->update_category($id, $name, $description, $top)) {
-                header("Location: ?controller=categories_art&action=index");
+                header("Location: ?controller=category_art&action=index");
                 exit;
             } else {
                 echo "Lỗi khi cập nhật danh mục.";
@@ -366,7 +385,7 @@ class ArticleController
     public function delete_category($id)
     {
         if ($this->article->delete_category($id)) {
-            header("Location: ?controller=categories_art&action=index");
+            header("Location: ?controller=category_art&action=index");
             exit;
         } else {
             echo "Lỗi khi xóa danh mục.";

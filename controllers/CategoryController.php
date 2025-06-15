@@ -12,7 +12,6 @@ class CategoryController
         $this->category = new Product($db->getConnection());
       
     }
-
     public function index()
     {
         $top_only = isset($_GET['top_only']) && $_GET['top_only'] == 1;
@@ -21,11 +20,16 @@ class CategoryController
         if ($search) {
             $categories = $this->category->searchByName_category($search);
         } else {
-            $categories = $this->category->getAllCategory($top_only);
+            if ($top_only) {
+                $categories = $this->category->getAllCategory(); // Chỉ lấy danh mục top
+            } else {
+                $categories = $this->category->getAllCategoryNotp(); // Lấy tất cả
+            }
         }
 
         require __DIR__ . '/../view/CategoryList.php';
     }
+
 
     public function create()
     {
@@ -34,7 +38,7 @@ class CategoryController
             $description = $_POST['description'];
             $top = isset($_POST['top']) ? 1 : 0;
             if ($this->category->create($name, $description, $top)) {
-                header("Location: ?controller=category_art&action=index");
+                header("Location: ?controller=category&action=index");
                 exit;
             } else {
                 echo "Lỗi khi tạo danh mục.";
@@ -56,7 +60,7 @@ class CategoryController
             $description = $_POST['description'];
             $top = isset($_POST['top']) ? 1 : 0;
             if ($this->category->update($id, $name, $description, $top)) {
-                header("Location: ?controller=category_art&action=index");
+                header("Location: index.php?controller=category_art&action=index");
                 exit;
             } else {
                 echo "Lỗi khi cập nhật danh mục.";

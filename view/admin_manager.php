@@ -586,9 +586,9 @@
                                             <td><?php echo htmlspecialchars($product['name']); ?></td>
                                             <td>
                                                 <?php if (!empty($product['main_image'])): ?>
-                                                    <img src="img/<?php echo htmlspecialchars($product['main_image']); ?>" width="50" alt="Product Image">
+                                                    <img src="../public/img/<?php echo htmlspecialchars($product['main_image']); ?>" width="50" alt="<?php echo htmlspecialchars($product['name']); ?>">
                                                 <?php else: ?>
-                                                    <img src="img/default-placeholder.png" width="50" alt="No Image">
+                                                    <img src="./publicimg/default-placeholder.png" width="50" alt="No Image">
                                                 <?php endif; ?>
                                             </td>
                                             <td><?php echo number_format($product['price']); ?> VND</td>
@@ -710,7 +710,7 @@
                                         <td>${product.name}</td>
                                         <td>
                                             ${product.main_image ? 
-                                                `<img src="img/${product.main_image}" width="50" alt="Product Image">` : 
+                                                `<img src="../public/img/${product.main_image}" width="50" alt="Product Image">` : 
                                                 `<img src="img/default-placeholder.png" width="50" alt="No Image">`
                                             }
                                         </td>

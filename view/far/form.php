@@ -10,7 +10,7 @@
 <body>
     <div class="container mt-5">
         <h2><?php echo isset($category) && is_array($category) ? 'Edit Farming Category' : 'Add New Farming Category'; ?></h2>
-        <form action="?controller=category_faming&action=<?php echo isset($category) && is_array($category) && isset($category['id']) ? 'edit_category&id=' . htmlspecialchars($category['id']) : 'create_category'; ?>" method="POST">
+        <form action="?controller=category_fm&action=<?php echo isset($category) && is_array($category) && isset($category['id']) ? 'edit_category&id=' . htmlspecialchars($category['id']) : 'create_category'; ?>" method="POST">
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" value="<?php echo isset($category) && is_array($category) && isset($category['name']) ? htmlspecialchars($category['name']) : ''; ?>" required>
@@ -24,7 +24,7 @@
                 <label class="form-check-label" for="top">Top Category</label>
             </div>
             <button type="submit" class="btn btn-primary">Save</button>
-            <a href="?controller=category_faming&action=index" class="btn btn-secondary">Cancel</a>
+            <a href="?controller=category_fm&action=index" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 </body>

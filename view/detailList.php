@@ -49,7 +49,7 @@
                                         class="related-img me-3" />
                                 </a>
                                 <div>
-                                    <a href="?controller=farming_process&action=detail_fm&id=<?= htmlspecialchars($process['ID']) ?>"
+                                    <a href="/?controller=farming_process&action=detail_fm&id=<?= htmlspecialchars($process['ID']) ?>"
                                         class="related-title text-primary fw-bold d-block">
                                         <?= htmlspecialchars($process['title']) ?>
                                     </a>
